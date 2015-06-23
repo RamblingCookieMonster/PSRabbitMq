@@ -18,7 +18,8 @@ All credit to CD. All blame for butchering to WF.
 * Converted timeouts to seconds
 * Added a LoopInterval (seconds) parameter for dequeue timeout
 * Added comment based help
-* Made asinine changes to formatting. Sorry!!
+* Made asinine changes to formatting and organization. Sorry!
+* Wrote no new tests. Sorry!
 
 #### Notes
 
