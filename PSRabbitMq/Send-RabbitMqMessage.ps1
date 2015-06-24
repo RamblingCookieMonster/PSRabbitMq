@@ -25,6 +25,11 @@ function Send-RabbitMqMessage {
     .PARAMETER Depth
         Depth of the InputObject to serialize. Defaults to 2.
 
+    .PARAMETER Persistent
+        If specified, send message with persitent delivery method.
+
+        Defaults to non-persistent
+
     .PARAMETER Credential
         Optional PSCredential to connect to RabbitMq with
 
@@ -46,9 +51,7 @@ function Send-RabbitMqMessage {
         # Sends a message to the MyExchange exchange with the routing key 'wat', and a hash table in the message body
     #>
 	param(
-		
-        [parameter(Mandatory = $True)]
-        [string]$ComputerName,
+        [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
 		[parameter(Mandatory = $True)]
         [string]$Exchange,
@@ -58,6 +61,8 @@ function Send-RabbitMqMessage {
 		
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
 		$InputObject,
+
+        [switch]$Persistent,
 
 		[Int32]$Depth = 2,
 
@@ -75,6 +80,10 @@ function Send-RabbitMqMessage {
 		
 		$Channel = $Connection.CreateModel()
 		$BodyProps = $Channel.CreateBasicProperties()
+        if($Persistent)
+        {
+            $BodyProps.SetPersistent($true)
+        }
 		$BodyProps.ContentType = "application/clixml+xml"
 	}
 	process

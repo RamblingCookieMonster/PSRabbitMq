@@ -62,8 +62,7 @@ function Register-RabbitMqEvent {
     #>
     [Cmdletbinding(DefaultParameterSetName = 'NoQueueName')]	
     param(
-		[parameter(Mandatory = $True)]
-        [string]$ComputerName,
+        [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
 		[parameter(Mandatory = $True)]
         [string]$Exchange,
