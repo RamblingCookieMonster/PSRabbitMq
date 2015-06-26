@@ -1,4 +1,4 @@
-function Send-RabbitMqMessage {
+﻿function Send-RabbitMqMessage {
     <#
     .SYNOPSIS
         Send a RabbitMq message
@@ -58,7 +58,7 @@ function Send-RabbitMqMessage {
 
 		[parameter(Mandatory = $True)]
         [string]$Key,
-		
+
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
 		$InputObject,
 
@@ -77,7 +77,7 @@ function Send-RabbitMqMessage {
         if($Ssl) { $Params.Add('Ssl',$Ssl) }
         if($Credential) { $Params.Add('Credential',$Credential) }
 		$Connection = New-RabbitMqConnectionFactory @Params -ErrorAction stop
-		
+
 		$Channel = $Connection.CreateModel()
 		$BodyProps = $Channel.CreateBasicProperties()
         if($Persistent)

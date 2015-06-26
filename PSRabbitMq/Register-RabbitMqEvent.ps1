@@ -1,4 +1,4 @@
-function Register-RabbitMqEvent {
+﻿function Register-RabbitMqEvent {
     <#
     .SYNOPSIS
         Register a PSJob that reads RabbitMq messages and runs a specified scriptblock
@@ -54,7 +54,7 @@ function Register-RabbitMqEvent {
         If specified, we use ComputerName as the SslOption ServerName property.
 
     .EXAMPLE
-        Register-RabbitMqEvent -ComputerName RabbitMq.Contoso.com -Exchange TestFanExc -Key 'wat' -Credential $Credential -Ssl Tls12 -QueueName TestQueue -Action {"HI! $_"}  
+        Register-RabbitMqEvent -ComputerName RabbitMq.Contoso.com -Exchange TestFanExc -Key 'wat' -Credential $Credential -Ssl Tls12 -QueueName TestQueue -Action {"HI! $_"}
 
         # Create a PowerShell job that...
             Connects to RabbitMq.consoto.com over tls 1.2, with credentials in $Credential
@@ -62,7 +62,7 @@ function Register-RabbitMqEvent {
             Runs a scriptblock that says "Hi! <message body>"
 
     #>
-    [Cmdletbinding(DefaultParameterSetName = 'NoQueueName')]	
+    [Cmdletbinding(DefaultParameterSetName = 'NoQueueName')]
     param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
@@ -115,16 +115,16 @@ function Register-RabbitMqEvent {
 		try
         {
 			Import-Module PSRabbitMq
-			
+
             #Get a connection
             #Build the connection
             $Params = @{ComputerName = $ComputerName }
             if($Ssl) { $Params.Add('Ssl',$Ssl) }
             if($Credential) { $Params.Add('Credential',$Credential) }
 		    $Connection = New-RabbitMqConnectionFactory @Params
-			
+
 			$Channel = $Connection.CreateModel()
-			
+
 		    #Create a personal queue or bind to an existing queue
             if($QueueName)
             {
@@ -138,16 +138,16 @@ function Register-RabbitMqEvent {
             {
                 $QueueResult = $Channel.QueueDeclare()
             }
-			
+
 			#Bind our queue to the ServerBuilds exchange
 			$Channel.QueueBind($QueueResult.QueueName, $Exchange, $Key)
-			
+
 			#Create our consumer
 			$Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
 			$Channel.BasicConsume($QueueResult.QueueName, $True, $Consumer) > $Null
-			
+
 			$Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
-			
+
 			#Listen on an infinite loop but still use timeouts so Ctrl+C will work!
 			$Timeout = New-TimeSpan -Seconds $LoopInterval
 			$Message = $null
