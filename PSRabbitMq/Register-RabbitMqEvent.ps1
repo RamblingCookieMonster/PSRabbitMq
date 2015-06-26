@@ -17,6 +17,8 @@ function Register-RabbitMqEvent {
     .PARAMETER Key
         Routing Key to look for
 
+        If you specify a QueueName and no Key, we use the QueueName as the key
+
     .PARAMETER QueueName
         If specified, bind to this queue.
 
@@ -67,7 +69,8 @@ function Register-RabbitMqEvent {
 		[parameter(Mandatory = $True)]
         [string]$Exchange,
 
-		[parameter(Mandatory = $True)]
+        [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
+        [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
         [string]$Key,
 
         [parameter(ParameterSetName = 'QueueName',
@@ -115,9 +118,9 @@ function Register-RabbitMqEvent {
 			
             #Get a connection
             #Build the connection
-            $Params = $PSBoundParameters.GetEnumerator() |
-                Where {'ComputerName','Credential','Ssl' -contains $_.Key -and $_.value} |
-                ForEach-Object -Begin {$Hash = @{}} -Process {$Hash.add($_.Key, $_.Value)} -End {$Hash}
+            $Params = @{ComputerName = $ComputerName }
+            if($Ssl) { $Params.Add('Ssl',$Ssl) }
+            if($Credential) { $Params.Add('Credential',$Credential) }
 		    $Connection = New-RabbitMqConnectionFactory @Params
 			
 			$Channel = $Connection.CreateModel()
@@ -126,6 +129,10 @@ function Register-RabbitMqEvent {
             if($QueueName)
             {
                 $QueueResult = $Channel.QueueDeclare($QueueName, $Durable, $Exclusive, $AutoDelete, $null)
+                if(-not $Key)
+                {
+                    $Key = $QueueName
+                }
             }
             else
             {

@@ -73,9 +73,9 @@ function Send-RabbitMqMessage {
 	begin
     {
         #Build the connection. Filter bound parameters, splat them.
-        $Params = $PSBoundParameters.GetEnumerator() |
-            Where {'ComputerName','Credential','Ssl' -contains $_.Key} |
-            ForEach-Object -Begin {$Hash = @{}} -Process {$Hash.add($_.Key, $_.Value)} -End {$Hash}
+        $Params = @{ComputerName = $ComputerName }
+        if($Ssl) { $Params.Add('Ssl',$Ssl) }
+        if($Credential) { $Params.Add('Credential',$Credential) }
 		$Connection = New-RabbitMqConnectionFactory @Params -ErrorAction stop
 		
 		$Channel = $Connection.CreateModel()
