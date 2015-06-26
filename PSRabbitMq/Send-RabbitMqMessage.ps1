@@ -73,10 +73,16 @@
 	begin
     {
         #Build the connection. Filter bound parameters, splat them.
-        $Params = @{ComputerName = $ComputerName }
-        if($Ssl) { $Params.Add('Ssl',$Ssl) }
-        if($Credential) { $Params.Add('Credential',$Credential) }
-		$Connection = New-RabbitMqConnectionFactory @Params -ErrorAction stop
+        $ConnParams = @{ ComputerName = $ComputerName }
+        Switch($PSBoundParameters.Keys)
+        {
+            'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
+            'Credential' { $ConnParams.Add('Credential',$Credential) }
+        }
+        Write-Verbose "Connection parameters: $($ConnParams | Out-String)"
+
+        #Create the connection and channel
+        $Connection = New-RabbitMqConnectionFactory @ConnParams
 
 		$Channel = $Connection.CreateModel()
 		$BodyProps = $Channel.CreateBasicProperties()

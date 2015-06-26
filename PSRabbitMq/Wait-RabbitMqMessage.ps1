@@ -39,6 +39,11 @@
 
         See Get-RabbitMQQueue
 
+    .PARAMETER RequireAck
+        If specified, require an ack for messages
+
+        Note: Without this, dequeue seems to empty a whole queue?
+
     .PARAMETER Timeout
         Seconds. Timeout Wait-RabbitMqMessage after this expires. Defaults to 1 second
 
@@ -88,6 +93,8 @@
         [parameter(ParameterSetName = 'QueueName')]
         [bool]$AutoDelete = $False,
 
+        [switch]$RequireAck,
+
 		[int]$Timeout = 1,
 
         [int]$LoopInterval = 1,
@@ -98,34 +105,31 @@
 	)
 	try
     {
-        #Build the connection
-        $Params = @{ComputerName = $ComputerName }
-        if($Ssl) { $Params.Add('Ssl',$Ssl) }
-        if($Credential) { $Params.Add('Credential',$Credential) }
-        $Connection = New-RabbitMqConnectionFactory @Params
-
-		$Channel = $Connection.CreateModel()
-
-		#Create a personal queue or bind to an existing queue
-        if($QueueName)
+        #Build the connection and channel params
+        $ConnParams = @{ ComputerName = $ComputerName }
+        $ChanParams = @{ Exchange = $Exchange }
+        Switch($PSBoundParameters.Keys)
         {
-            $QueueResult = $Channel.QueueDeclare($QueueName, $Durable, $Exclusive, $AutoDelete, $null)
-            if(-not $Key)
+            'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
+            'Credential' { $ConnParams.Add('Credential',$Credential) }
+            'Key'        { $ChanParams.Add('Key',$Key)}
+            'QueueName'
             {
-                $Key = $QueueName
+                $ChanParams.Add('QueueName',$QueueName)
+                $ChanParams.Add('Durable' ,$Durable)
+                $ChanParams.Add('Exclusive',$Exclusive)
+                $ChanParams.Add('AutoDelete' ,$AutoDelete)
             }
         }
-        else
-        {
-            $QueueResult = $Channel.QueueDeclare()
-        }
+        Write-Verbose "Connection parameters: $($ConnParams | Out-String)`nChannel parameters: $($ChanParams | Out-String)"
 
-		#Bind our queue to the ServerBuilds exchange
-		$Channel.QueueBind($QueueName, $Exchange, $Key)
+        #Create the connection and channel
+        $Connection = New-RabbitMqConnectionFactory @ConnParams
+		$Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
 
 		#Create our consumer
 		$Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
-		$Channel.BasicConsume($QueueName, $True, $Consumer) > $Null
+		$Channel.BasicConsume($QueueName, [bool](!$RequireAck), $Consumer) > $Null
 
 		$Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
 
@@ -150,10 +154,14 @@
 				#Kill the loop since we got a message
 				$SecondsRemaining = 0
 				$MessageReceived = $true
+                if($RequireAck)
+                {
+				    $Channel.BasicAck($Delivery.DeliveryTag, $false)
+                }
 			}
 			$SecondsRemaining--
 		}
-		if($Timeout -and !$MessageReceived)
+		if($Timeout -and -not $MessageReceived)
         {
 			#Write an error if -Timeout was specified and there is nothing in $Message after the loop
 			Write-Error -Message "Timeout waiting for event" -ErrorAction Stop

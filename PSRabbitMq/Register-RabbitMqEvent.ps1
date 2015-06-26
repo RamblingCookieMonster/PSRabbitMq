@@ -27,17 +27,16 @@
     .PARAMETER Durable
         If queuename is specified, this needs to match whether it is durable
 
-        See Get-RabbitMQQueue
-
     .PARAMETER Exclusive
         If queuename is specified, this needs to match whether it is Exclusive
-
-        See Get-RabbitMQQueue
 
     .PARAMETER AutoDelete
         If queuename is specified, this needs to match whether it is AutoDelete
 
-        See Get-RabbitMQQueue
+    .PARAMETER RequireAck
+        If specified, require an ack for messages
+
+        Note: Without this, dequeue seems to empty a whole queue?
 
     .PARAMETER Timeout
         Seconds. Timeout Wait-RabbitMqMessage after this expires. Defaults to 1 second
@@ -86,6 +85,8 @@
         [parameter(ParameterSetName = 'QueueName')]
         [bool]$AutoDelete = $False,
 
+        [switch]$RequireAck,
+
         [int]$LoopInterval = 1,
 
 		[ScriptBlock]$Action,
@@ -95,7 +96,7 @@
         [System.Security.Authentication.SslProtocols]$Ssl
 	)
 
-	$ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete
+	$ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck
     Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
 		param(
 			$ComputerName,
@@ -108,7 +109,8 @@
             $QueueName,
             $Durable,
             $Exclusive,
-            $AutoDelete
+            $AutoDelete,
+            $RequireAck
 		)
 
 		$ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
@@ -116,35 +118,28 @@
         {
 			Import-Module PSRabbitMq
 
-            #Get a connection
-            #Build the connection
-            $Params = @{ComputerName = $ComputerName }
-            if($Ssl) { $Params.Add('Ssl',$Ssl) }
-            if($Credential) { $Params.Add('Credential',$Credential) }
-		    $Connection = New-RabbitMqConnectionFactory @Params
-
-			$Channel = $Connection.CreateModel()
-
-		    #Create a personal queue or bind to an existing queue
-            if($QueueName)
+            #Build the connection and channel params
+            $ConnParams = @{ ComputerName = $ComputerName }
+            $ChanParams = @{ Exchange = $Exchange }
+            If($Ssl)       { $ConnParams.Add('Ssl',$Ssl) }
+            If($Credential){ $ConnParams.Add('Credential',$Credential) }
+            If($Key)       { $ChanParams.Add('Key',$Key)}
+            If($QueueName)
             {
-                $QueueResult = $Channel.QueueDeclare($QueueName, $Durable, $Exclusive, $AutoDelete, $null)
-                if(-not $Key)
-                {
-                    $Key = $QueueName
-                }
+                $ChanParams.Add('QueueName',$QueueName)
+                $ChanParams.Add('Durable' ,$Durable)
+                $ChanParams.Add('Exclusive',$Exclusive)
+                $ChanParams.Add('AutoDelete' ,$AutoDelete)
             }
-            else
-            {
-                $QueueResult = $Channel.QueueDeclare()
-            }
+            
 
-			#Bind our queue to the ServerBuilds exchange
-			$Channel.QueueBind($QueueResult.QueueName, $Exchange, $Key)
+            #Create the connection and channel
+            $Connection = New-RabbitMqConnectionFactory @ConnParams
+		    $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
 
 			#Create our consumer
 			$Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
-			$Channel.BasicConsume($QueueResult.QueueName, $True, $Consumer) > $Null
+			$Channel.BasicConsume($QueueResult.QueueName, [bool](!$RequireAck), $Consumer) > $Null
 
 			$Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
 
@@ -156,7 +151,11 @@
 				if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
                 {
 					ConvertFrom-RabbitMqDelivery -Delivery $Delivery | ForEach-Object $ActionSB
-				}
+	                if($RequireAck)
+                    {
+				        $Channel.BasicAck($Delivery.DeliveryTag, $false)
+                    }
+                }
 			}
 		}
         finally

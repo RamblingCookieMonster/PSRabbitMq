@@ -27,17 +27,16 @@
     .PARAMETER Durable
         If queuename is specified, this needs to match whether it is durable
 
-        See Get-RabbitMQQueue
-
     .PARAMETER Exclusive
         If queuename is specified, this needs to match whether it is Exclusive
-
-        See Get-RabbitMQQueue
 
     .PARAMETER AutoDelete
         If queuename is specified, this needs to match whether it is AutoDelete
 
-        See Get-RabbitMQQueue
+    .PARAMETER RequireAck
+        If specified, require an ack for messages
+
+        Note: Without this, dequeue seems to empty a whole queue?
 
     .PARAMETER LoopInterval
         Seconds. Timeout for each interval we wait for a RabbitMq message. Defaults to 1 second.
@@ -79,6 +78,8 @@
         [parameter(ParameterSetName = 'QueueName')]
         [bool]$AutoDelete = $False,
 
+        [switch]$RequireAck,
+
         [int]$LoopInterval = 1,
 
         [PSCredential]$Credential,
@@ -87,34 +88,31 @@
 	)
 	try
     {
-        #Build the connection
-        $Params = @{ComputerName = $ComputerName }
-        if($Ssl) { $Params.Add('Ssl',$Ssl) }
-        if($Credential) { $Params.Add('Credential',$Credential) }
-        $Connection = New-RabbitMqConnectionFactory @Params
-
-		$Channel = $Connection.CreateModel()
-
-		#Create a personal queue or bind to an existing queue
-        if($QueueName)
+        #Build the connection and channel params
+        $ConnParams = @{ ComputerName = $ComputerName }
+        $ChanParams = @{ Exchange = $Exchange }
+        Switch($PSBoundParameters.Keys)
         {
-            $QueueResult = $Channel.QueueDeclare($QueueName, $Durable, $Exclusive, $AutoDelete, $null)
-            if(-not $Key)
+            'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
+            'Credential' { $ConnParams.Add('Credential',$Credential) }
+            'Key'        { $ChanParams.Add('Key',$Key)}
+            'QueueName'
             {
-                $Key = $QueueName
+                $ChanParams.Add('QueueName',$QueueName)
+                $ChanParams.Add('Durable' ,$Durable)
+                $ChanParams.Add('Exclusive',$Exclusive)
+                $ChanParams.Add('AutoDelete' ,$AutoDelete)
             }
         }
-        else
-        {
-            $QueueResult = $Channel.QueueDeclare()
-        }
 
-		#Bind our queue to the ServerBuilds exchange
-		$Channel.QueueBind($QueueResult.QueueName, $Exchange, $Key)
+        #Create the connection and channel
+        $Connection = New-RabbitMqConnectionFactory @ConnParams
+		$Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
+
 
 		#Create our consumer
 		$Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
-		$Channel.BasicConsume($QueueResult.QueueName, $True, $Consumer) > $Null
+		$Channel.BasicConsume($QueueResult.QueueName, [bool](!$RequireAck), $Consumer) > $Null
 
 		$Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
 
@@ -126,7 +124,10 @@
 			if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
             {
 				ConvertFrom-RabbitMqDelivery -Delivery $Delivery
-				#$Channel.BasicAck($Delivery.DeliveryTag, $false)
+                if($RequireAck)
+                {
+				    $Channel.BasicAck($Delivery.DeliveryTag, $false)
+                }
 			}
 		}
 	}
