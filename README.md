@@ -3,7 +3,13 @@ PSRabbitMq
 
 PowerShell module to send and receive messages from a RabbitMq server.
 
-All credit to CD. All blame for butchering to WF.
+All credit to CD. All blame for butchering to @ramblingcookiemonster.
+
+### Functionality
+
+Send and receive messages through a RabbitMq server
+
+[![Send and receive](/Media/SendAndReceive.png)](https://raw.githubusercontent.com/RamblingCookieMonster/PSRabbitMq/master/Media/SendAndReceive.png)
 
 ### Instructions
 
@@ -17,7 +23,7 @@ All credit to CD. All blame for butchering to WF.
 
 #### Managing RabbitMq with RabbitMqTools
 
-This is a module for managing RabbitMq over the REST API with [RabbitMqTools](https://github.com/RamblingCookieMonster/RabbitMQTools/), originally written by mariuszwojcik. [Slight modifications](https://github.com/mariuszwojcik/RabbitMQTools/issues/1) by WF.
+[RabbitMqTools](https://github.com/RamblingCookieMonster/RabbitMQTools/) is a separate module for managing RabbitMq over the REST API. It was originally written by @mariuszwojcik, with [slight modifications](https://github.com/mariuszwojcik/RabbitMQTools/issues/1) from @ramblingcookiemonster.
 
 Skip this section if you're just interested in using PSRabbitMq to send and receive messages.
 
@@ -127,7 +133,7 @@ Skip this section if you're just interested in using PSRabbitMq to send and rece
 
 #### PSRabbitMq
 
-This is a module for sending and receiving messages using a RabbitMq server and the .NET client library. Originally written by CD, slight modification by WF
+This is a module for sending and receiving messages using a RabbitMq server and the .NET client library. Originally written by CD, slight modification by @ramblingcookiemonster.
 
 ```powershell
 # Download PSRabbitMq
@@ -185,7 +191,7 @@ This is a module for sending and receiving messages using a RabbitMq server and 
 
 ### Initial changes
 
-Temporary section to document changes since reciept of code
+Temporary section to document changes since reciept of code. Will retire this eventually and rely on git commits.
 
 * 2015/6/23
   * Added option for SSL connections
