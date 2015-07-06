@@ -7,9 +7,15 @@ All credit to CD. All blame for butchering to @ramblingcookiemonster.
 
 ### Functionality
 
-Send and receive messages through a RabbitMq server
+Send and receive messages through a RabbitMQ server:
 
-[![Send and receive](/Media/SendAndReceive.png)](https://raw.githubusercontent.com/RamblingCookieMonster/PSRabbitMq/master/Media/SendAndReceive.png)
+![Send and receive](/Media/SendAndReceive.png)
+
+Listen for RabbitMQ messages until you break execution:
+
+![Listener](/Media/Listener.png)
+
+![Sending to the listener](/Media/ListenerSend.png)
 
 ### Instructions
 
@@ -217,3 +223,9 @@ Temporary section to document changes since reciept of code. Will retire this ev
 ### Notes
 
 I don't know what messaging is and I'm terrible with code. Apologies for ugly, inefficient, or broken stuff : )
+
+References:
+
+* [RabbitMQ .NET Client references](http://www.rabbitmq.com/releases/rabbitmq-dotnet-client/v3.5.3/rabbitmq-dotnet-client-3.5.3-client-htmldoc/html/)
+* [RabbitMQ .NET / C# API Guide](http://www.rabbitmq.com/dotnet-api-guide.html)
+* [RabbitMQ Management API](https://raw.githack.com/rabbitmq/rabbitmq-management/rabbitmq_v3_5_3/priv/www/api/index.html)
