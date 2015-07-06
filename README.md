@@ -13,9 +13,7 @@ Send and receive messages through a RabbitMQ server:
 
 Listen for RabbitMQ messages until you break execution:
 
-![Listener](/Media/Listener.png)
-
-![Sending to the listener](/Media/ListenerSend.png)
+![Listener gif](/Media/Listener.gif)
 
 ### Instructions
 
