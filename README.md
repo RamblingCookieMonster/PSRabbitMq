@@ -1,7 +1,7 @@
-PSRabbitMq
+PSRabbitMQ
 =============
 
-PowerShell module to send and receive messages from a RabbitMq server.
+PowerShell module to send and receive messages from a RabbitMQ server.
 
 All credit to @gpduck, all blame for butchering to @ramblingcookiemonster.
 
@@ -19,21 +19,17 @@ Listen for RabbitMQ messages until you break execution:
 
 #### Prerequisites
 
-* A working RabbitMq server
-* Optionally, enable rabbitmq_management plugin for RabbitMQTools
-* Optionally, configure SSL
-  * Use OpenSSL and the rabbitmq.config file (docs online)
-  * On Windows, you might need to start SSL in the Erlang envirnment via werl.exe ```ssl:start().```
+* A working RabbitMQ server
 * More details at the [PowerShell and RabbitMQ post](http://ramblingcookiemonster.github.io/RabbitMQ-Intro/)
 
-#### Managing RabbitMq with RabbitMqTools
+#### Managing RabbitMQ with RabbitMQTools
 
-[RabbitMqTools](https://github.com/RamblingCookieMonster/RabbitMQTools/) is a separate module for managing RabbitMq over the REST API. It was originally written by @mariuszwojcik, with [slight modifications](https://github.com/mariuszwojcik/RabbitMQTools/issues/1) from @ramblingcookiemonster.
+[RabbitMQTools](https://github.com/RamblingCookieMonster/RabbitMQTools/) is a separate module for managing RabbitMQ over the REST API. It was originally written by @mariuszwojcik, with [slight modifications](https://github.com/mariuszwojcik/RabbitMQTools/issues/1) from @ramblingcookiemonster.
 
-Skip this section if you're just interested in using PSRabbitMq to send and receive messages.
+Skip this section if you're just interested in using PSRabbitMQ to send and receive messages.
 
 ```PowerShell
-# Download RabbitMqTools
+# Download RabbitMQTools
 # https://github.com/RamblingCookieMonster/RabbitMQTools/archive/master.zip
 # Unblock the archive
 # Copy the RabbitMQTools module to one of your module paths ($env:PSModulePath -split ";")
@@ -136,27 +132,27 @@ Skip this section if you're just interested in using PSRabbitMq to send and rece
 
 ```
 
-#### PSRabbitMq
+#### PSRabbitMQ
 
-This is a module for sending and receiving messages using a RabbitMq server and the .NET client library. Originally written by CD, slight modification by @ramblingcookiemonster.
+This is a module for sending and receiving messages using a RabbitMQ server and the .NET client library. Originally written by CD, slight modification by @ramblingcookiemonster.
 
 ```powershell
-# Download PSRabbitMq
-# https://github.com/RamblingCookieMonster/PSRabbitMq/archive/master.zip
+# Download PSRabbitMQ
+# https://github.com/RamblingCookieMonster/PSRabbitMQ/archive/master.zip
 # Unblock the archiveiles
-# Copy the PSRabbitMq module folder to one of your module paths ($env:PSModulePath -split ";")
+# Copy the PSRabbitMQ module folder to one of your module paths ($env:PSModulePath -split ";")
 
 #Import the module
-    Import-Module PSRabbitMq
+    Import-Module PSRabbitMQ
 
-#List commands in PSRabbitMq
-    Get-Command -Module PSRabbitMq
+#List commands in PSRabbitMQ
+    Get-Command -Module PSRabbitMQ
 
-#Get help for a function in PSRabbitMq
-    Get-Help Send-RabbitMqMessage -Full
+#Get help for a function in PSRabbitMQ
+    Get-Help Send-RabbitMQMessage -Full
 
-#Define a default RabbitMq server and get a credential to use
-    Set-RabbitMqConfig -ComputerName rabbitmq.contoso.com
+#Define a default RabbitMQ server and get a credential to use
+    Set-RabbitMQConfig -ComputerName rabbitmq.contoso.com
     $CredRabbit = Get-Credential
 
 #Set some common parameters we will always use:
@@ -165,15 +161,15 @@ This is a module for sending and receiving messages using a RabbitMq server and 
         Ssl = 'Tls12' #I'm using SSL... omit this if you aren't
     }
 
-#Assumes an exchange and bound queue set up per RabbitMqTools example:
+#Assumes an exchange and bound queue set up per RabbitMQTools example:
     #$ExchangeName = "TestFanExc"
     #$QueueName = 'TestQueue'
 
 #Start waiting for a RabbitMQ message for 120 seconds
-    $Incoming = Wait-RabbitMqMessage -Exchange TestFanExc -Key 'TestQueue' -QueueName TestQueue -Timeout 120 @Params
+    $Incoming = Wait-RabbitMQMessage -Exchange TestFanExc -Key 'TestQueue' -QueueName TestQueue -Timeout 120 @Params
 
-#Open a new PowerShell Window import PSRabbitMq, and send a persistent message
-    Send-RabbitMqMessage -Exchange TestFanExc -Key 'TestQueue' -InputObject "Hello!" -Persistent @Params
+#Open a new PowerShell Window import PSRabbitMQ, and send a persistent message
+    Send-RabbitMQMessage -Exchange TestFanExc -Key 'TestQueue' -InputObject "Hello!" -Persistent @Params
 
 #Send an arbitrary object
     $SomeObject = [pscustomobject]@{
@@ -181,7 +177,7 @@ This is a module for sending and receiving messages using a RabbitMq server and 
         Data = $(Get-Date)
     }
 
-    Send-RabbitMqMessage -Exchange TestFanExc -Key 'TestQueue' -InputObject $SomeObject -Persistent -Depth 2 @Params
+    Send-RabbitMQMessage -Exchange TestFanExc -Key 'TestQueue' -InputObject $SomeObject -Persistent -Depth 2 @Params
 
         <#
             # InputObject is serialized when sent,
@@ -201,11 +197,11 @@ Temporary section to document changes since reciept of code. Will retire this ev
 * 2015/6/23
   * Added option for SSL connections
   * Added option for authentication
-  * Created public New-RabbitMqConnectionFactory function to simplify handling the new options
-  * Created Add-RabbitMqConnCred private function to extract username/password from cred and add to factory
-  * Created New-RabbitMqSslOption private function to simplify setting SSL options.
+  * Created public New-RabbitMQConnectionFactory function to simplify handling the new options
+  * Created Add-RabbitMQConnCred private function to extract username/password from cred and add to factory
+  * Created New-RabbitMQSslOption private function to simplify setting SSL options.
     * Note: the CertPath/CertPhrase/AcceptablePolicyErrors aren't specified by any calls to the function. Have not tested these.
-  * Renamed private parse function to ConvertFrom-RabbitMqDelivery, made it public. Allows parsing from Register-RabbitMqEvent.
+  * Renamed private parse function to ConvertFrom-RabbitMQDelivery, made it public. Allows parsing from Register-RabbitMQEvent.
   * Wasn't sure how these were being used. Added handling for specifying an existing queue name and associated details (e.g. durable)
   * Converted timeouts to seconds
   * Added a LoopInterval (seconds) parameter for dequeue timeout
