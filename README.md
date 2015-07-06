@@ -3,7 +3,7 @@ PSRabbitMq
 
 PowerShell module to send and receive messages from a RabbitMq server.
 
-All credit to CD. All blame for butchering to @ramblingcookiemonster.
+All credit to @gpduck, all blame for butchering to @ramblingcookiemonster.
 
 ### Functionality
 
@@ -221,6 +221,11 @@ Temporary section to document changes since reciept of code. Will retire this ev
 ### Notes
 
 I don't know what messaging is and I'm terrible with code. Apologies for ugly, inefficient, or broken stuff : )
+
+TODO:
+
+ * Add basic Pester tests and AppVeyor scaffolding
+ * Break down functions a bit more. For example, offer functions to handle acknowledgements. I might retrieve a message requireing acknowledgement, and only send the ack down the line if my code meets certain criteria.
 
 References:
 
