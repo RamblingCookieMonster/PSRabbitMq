@@ -24,6 +24,7 @@ Listen for RabbitMQ messages until you break execution:
 * Optionally, configure SSL
   * Use OpenSSL and the rabbitmq.config file (docs online)
   * On Windows, you might need to start SSL in the Erlang envirnment via werl.exe ```ssl:start().```
+* More details at the [PowerShell and RabbitMQ post](http://ramblingcookiemonster.github.io/RabbitMQ-Intro/)
 
 #### Managing RabbitMq with RabbitMqTools
 
@@ -34,8 +35,8 @@ Skip this section if you're just interested in using PSRabbitMq to send and rece
 ```PowerShell
 # Download RabbitMqTools
 # https://github.com/RamblingCookieMonster/RabbitMQTools/archive/master.zip
-# Unblock the zip files
-# Copy them to one of your module paths: $env:PSModulePath -split ";"
+# Unblock the archive
+# Copy the RabbitMQTools module to one of your module paths ($env:PSModulePath -split ";")
 
 #Import the module
     Import-Module RabbitMQTools -force
@@ -142,8 +143,8 @@ This is a module for sending and receiving messages using a RabbitMq server and 
 ```powershell
 # Download PSRabbitMq
 # https://github.com/RamblingCookieMonster/PSRabbitMq/archive/master.zip
-# Unblock the zip files
-# Copy them to one of your module paths: $env:PSModulePath -split ";"
+# Unblock the archiveiles
+# Copy the PSRabbitMq module folder to one of your module paths ($env:PSModulePath -split ";")
 
 #Import the module
     Import-Module PSRabbitMq
@@ -232,3 +233,4 @@ References:
 * [RabbitMQ .NET Client references](http://www.rabbitmq.com/releases/rabbitmq-dotnet-client/v3.5.3/rabbitmq-dotnet-client-3.5.3-client-htmldoc/html/)
 * [RabbitMQ .NET / C# API Guide](http://www.rabbitmq.com/dotnet-api-guide.html)
 * [RabbitMQ Management API](https://raw.githack.com/rabbitmq/rabbitmq-management/rabbitmq_v3_5_3/priv/www/api/index.html)
+* [Accompanying blog post on RabbitMQ and PowerShell](http://ramblingcookiemonster.github.io/RabbitMQ-Intro/
