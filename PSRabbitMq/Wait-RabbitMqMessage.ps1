@@ -95,15 +95,15 @@
 
         [switch]$RequireAck,
 
-		[int]$Timeout = 1,
+        [int]$Timeout = 1,
 
         [int]$LoopInterval = 1,
 
         [PSCredential]$Credential,
 
         [System.Security.Authentication.SslProtocols]$Ssl
-	)
-	try
+    )
+    try
     {
         #Build the connection and channel params
         $ConnParams = @{ ComputerName = $ComputerName }
@@ -125,18 +125,18 @@
 
         #Create the connection and channel
         $Connection = New-RabbitMqConnectionFactory @ConnParams
-		$Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
+        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
 
-		#Create our consumer
-		$Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
-		$Channel.BasicConsume($QueueName, [bool](!$RequireAck), $Consumer) > $Null
+        #Create our consumer
+        $Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
+        $Channel.BasicConsume($QueueName, [bool](!$RequireAck), $Consumer) > $Null
 
-		$Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
+        $Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
 
-		if($Timeout)
+        if($Timeout)
         {
             $TimeSpan = New-TimeSpan -Seconds $Timeout
-			$SecondsRemaining = $Timeout
+            $SecondsRemaining = $Timeout
 		}
         else
         {
