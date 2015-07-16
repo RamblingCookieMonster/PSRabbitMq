@@ -40,7 +40,7 @@
 
         $Connection,
 
-		[parameter(Mandatory = $True)]
+        [parameter(Mandatory = $True)]
         [string]$Exchange,
 
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
@@ -64,7 +64,7 @@
     {
         $Channel = $Connection.CreateModel()
 
-		#Create a personal queue or bind to an existing queue
+        #Create a personal queue or bind to an existing queue
         if($QueueName)
         {
             $QueueResult = $Channel.QueueDeclare($QueueName, $Durable, $Exclusive, $AutoDelete, $null)
@@ -78,8 +78,8 @@
             $QueueResult = $Channel.QueueDeclare()
         }
 
-		#Bind our queue to the ServerBuilds exchange
-		$Channel.QueueBind($QueueName, $Exchange, $Key)
+        #Bind our queue to the ServerBuilds exchange
+        $Channel.QueueBind($QueueName, $Exchange, $Key)
         $Channel
     }
     Catch
