@@ -11,19 +11,19 @@ Describe "ConvertFrom-RabbitMQDelivery" {
         $Properties = New-Object RabbitMQ.Client.Framing.BasicProperties
         $Delivery.BasicProperties = $Properties
         
-    It "returns the plain text with no ContentType" {
+        It "returns the plain text with no ContentType" {
             $Delivery.BasicProperties.ClearContentType()
             ConvertFrom-RabbitMQDelivery -Delivery $Delivery | Should Be "test string"
-    }
+        }
         
-    It "returns the plain text with ContentType = text/plain" {
+        It "returns the plain text with ContentType = text/plain" {
             $Delivery.BasicProperties.ContentType = "text/plain"
             ConvertFrom-RabbitMQDelivery -Delivery $Delivery | Should Be "test string"
-    }
+        }
     }
     
     context "CliXML Delivery" {
-    It "returns the object with ContentType = application/clixml+xml" {
+        It "returns the object with ContentType = application/clixml+xml" {
             $Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
             $TestObject = [PSCustomObject]@{
                 P1 = "Property 1"
@@ -40,7 +40,7 @@ Describe "ConvertFrom-RabbitMQDelivery" {
             $ParsedObject.P1 | Should Be "Property 1"
             $ParsedObject.P2 | Should Be "Property 2"
             ($ParsedObject | Get-Member -MemberType Properties).Count | Should Be 2
-    }
+        }
         
         It "returns an ArrayList when an array is passed in" {
             $Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
@@ -75,12 +75,12 @@ Describe "ConvertFrom-RabbitMQDelivery" {
         $Properties = New-Object RabbitMQ.Client.Framing.BasicProperties
         $Delivery.BasicProperties = $Properties
                 
-    It "returns the object with ContentType = application/json" {
+        It "returns the object with ContentType = application/json" {
             $Delivery.BasicProperties.ContentType = "application/json"
             $ParsedObject = ConvertFrom-RabbitMQDelivery -Delivery $Delivery
             $ParsedObject.P1 | Should Be "Property 1"
             $ParsedObject.P2 | Should Be "Property 2"
             ($ParsedObject | Get-Member -MemberType Properties).Count | Should Be 2
-    }
+        }
     }
 }
