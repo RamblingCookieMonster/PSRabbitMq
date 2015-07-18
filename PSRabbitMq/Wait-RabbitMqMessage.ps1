@@ -95,15 +95,15 @@
 
         [switch]$RequireAck,
 
-		[int]$Timeout = 1,
+        [int]$Timeout = 1,
 
         [int]$LoopInterval = 1,
 
         [PSCredential]$Credential,
 
         [System.Security.Authentication.SslProtocols]$Ssl
-	)
-	try
+    )
+    try
     {
         #Build the connection and channel params
         $ConnParams = @{ ComputerName = $ComputerName }
@@ -125,57 +125,57 @@
 
         #Create the connection and channel
         $Connection = New-RabbitMqConnectionFactory @ConnParams
-		$Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
+        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
 
-		#Create our consumer
-		$Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
-		$Channel.BasicConsume($QueueName, [bool](!$RequireAck), $Consumer) > $Null
+        #Create our consumer
+        $Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
+        $Channel.BasicConsume($QueueName, [bool](!$RequireAck), $Consumer) > $Null
 
-		$Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
+        $Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
 
-		if($Timeout)
+        if($Timeout)
         {
             $TimeSpan = New-TimeSpan -Seconds $Timeout
-			$SecondsRemaining = $Timeout
-		}
+            $SecondsRemaining = $Timeout
+        }
         else
         {
-			$SecondsRemaining = [Double]::PositiveInfinity
-		}
+            $SecondsRemaining = [Double]::PositiveInfinity
+        }
         $RMQTimeout = New-TimeSpan -Seconds $LoopInterval
 
-		while($SecondsRemaining -gt 0)
+        while($SecondsRemaining -gt 0)
         {
-			#Listen on a loop but still use short timeouts so Ctrl+C will work!
-			$MessageReceived = $false
-			if($Consumer.Queue.Dequeue($RMQTimeout.TotalMilliseconds, [ref]$Delivery))
+            #Listen on a loop but still use short timeouts so Ctrl+C will work!
+            $MessageReceived = $false
+            if($Consumer.Queue.Dequeue($RMQTimeout.TotalMilliseconds, [ref]$Delivery))
             {
-				ConvertFrom-RabbitMqDelivery -Delivery $Delivery
-				#Kill the loop since we got a message
-				$SecondsRemaining = 0
-				$MessageReceived = $true
+                ConvertFrom-RabbitMqDelivery -Delivery $Delivery
+                #Kill the loop since we got a message
+                $SecondsRemaining = 0
+                $MessageReceived = $true
                 if($RequireAck)
                 {
-				    $Channel.BasicAck($Delivery.DeliveryTag, $false)
+                    $Channel.BasicAck($Delivery.DeliveryTag, $false)
                 }
-			}
-			$SecondsRemaining--
-		}
-		if($Timeout -and -not $MessageReceived)
+            }
+            $SecondsRemaining--
+        }
+        if($Timeout -and -not $MessageReceived)
         {
-			#Write an error if -Timeout was specified and there is nothing in $Message after the loop
-			Write-Error -Message "Timeout waiting for event" -ErrorAction Stop
-		}
-	}
+            #Write an error if -Timeout was specified and there is nothing in $Message after the loop
+            Write-Error -Message "Timeout waiting for event" -ErrorAction Stop
+        }
+    }
     finally
     {
-		if($Channel)
+        if($Channel)
         {
-			$Channel.Close()
-		}
-		if($Connection -and $Connection.IsOpen)
+            $Channel.Close()
+        }
+        if($Connection -and $Connection.IsOpen)
         {
-			$Connection.Close()
-		}
-	}
+        $Connection.Close()
+        }
+    }
 }

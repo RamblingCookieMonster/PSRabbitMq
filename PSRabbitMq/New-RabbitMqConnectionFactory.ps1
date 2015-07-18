@@ -43,8 +43,8 @@
         $Factory = New-Object RabbitMQ.Client.ConnectionFactory
         
         #Add the hostname
-		$HostNameProp = [RabbitMQ.Client.ConnectionFactory].GetField("HostName")
-		$HostNameProp.SetValue($Factory, $ComputerName)
+        $HostNameProp = [RabbitMQ.Client.ConnectionFactory].GetField("HostName")
+        $HostNameProp.SetValue($Factory, $ComputerName)
     
         #Add cred and SSL info
         if($Credential)

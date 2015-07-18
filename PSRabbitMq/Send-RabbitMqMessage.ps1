@@ -50,27 +50,27 @@
         # Connects to RabbitMq.Contoso.com over tls 1.2 with credential in $Credential
         # Sends a message to the MyExchange exchange with the routing key 'wat', and a hash table in the message body
     #>
-	param(
+    param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
-		[parameter(Mandatory = $True)]
+        [parameter(Mandatory = $True)]
         [string]$Exchange,
 
-		[parameter(Mandatory = $True)]
+        [parameter(Mandatory = $True)]
         [string]$Key,
 
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-		$InputObject,
+        $InputObject,
 
         [switch]$Persistent,
 
-		[Int32]$Depth = 2,
+        [Int32]$Depth = 2,
 
         [PSCredential]$Credential,
 
         [System.Security.Authentication.SslProtocols]$Ssl
-	)
-	begin
+    )
+    begin
     {
         #Build the connection. Filter bound parameters, splat them.
         $ConnParams = @{ ComputerName = $ComputerName }
@@ -84,50 +84,50 @@
         #Create the connection and channel
         $Connection = New-RabbitMqConnectionFactory @ConnParams
 
-		$Channel = $Connection.CreateModel()
-		$BodyProps = $Channel.CreateBasicProperties()
+        $Channel = $Connection.CreateModel()
+        $BodyProps = $Channel.CreateBasicProperties()
         if($Persistent)
         {
             $BodyProps.SetPersistent($true)
         }
-		$BodyProps.ContentType = "application/clixml+xml"
-	}
-	process
+        $BodyProps.ContentType = "application/clixml+xml"
+    }
+    process
     {
-		try
+        try
         {
-			$Serialized = [System.Management.Automation.PSSerializer]::Serialize($InputObject, $Depth)
-		}
+            $Serialized = [System.Management.Automation.PSSerializer]::Serialize($InputObject, $Depth)
+        }
         catch
         {
-			#This is for V2 clients...
-			$TempFile = [io.path]::GetTempFileName()
-			try
+            #This is for V2 clients...
+            $TempFile = [io.path]::GetTempFileName()
+            try
             {
-				Export-Clixml -Path $TempFile -InputObject $InputObject -Depth $Depth -Encoding Utf8
-				$Serialized = [IO.File]::ReadAllLines($TempFile, [Text.Encoding]::UTF8)
-			}
+                Export-Clixml -Path $TempFile -InputObject $InputObject -Depth $Depth -Encoding Utf8
+                $Serialized = [IO.File]::ReadAllLines($TempFile, [Text.Encoding]::UTF8)
+            }
             finally
             {
-				if( (Test-Path -Path $TempFile) )
+                if( (Test-Path -Path $TempFile) )
                 {
-					Remove-Item -Path $TempFile -Force
-				}
-			}
-		}
+                    Remove-Item -Path $TempFile -Force
+                }
+            }
+        }
 
-		$Body = [System.Text.Encoding]::UTF8.GetBytes($Serialized)
-		$Channel.BasicPublish($Exchange, $Key, $BodyProps, $Body)
-	}
-	end
+        $Body = [System.Text.Encoding]::UTF8.GetBytes($Serialized)
+        $Channel.BasicPublish($Exchange, $Key, $BodyProps, $Body)
+    }
+    end
     {
-		if($Channel)
+        if($Channel)
         {
-			$Channel.Close()
-		}
-		if($Connection -and $Connection.IsOpen)
+            $Channel.Close()
+        }
+        if($Connection -and $Connection.IsOpen)
         {
-			$Connection.Close()
-		}
-	}
+            $Connection.Close()
+        }
+    }
 }

@@ -55,10 +55,10 @@
         # Connect to RabbitMq.contoso.com over Tls 1.2 with credentials in $Credential
         # Listen for new messages on MyExchange exchange, with routing key 'wat'
     #>
-	param(
+    param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
-		[parameter(Mandatory = $True)]
+        [parameter(Mandatory = $True)]
         [string]$Exchange,
 
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
@@ -85,8 +85,8 @@
         [PSCredential]$Credential,
 
         [System.Security.Authentication.SslProtocols]$Ssl
-	)
-	try
+    )
+    try
     {
         #Build the connection and channel params
         $ConnParams = @{ ComputerName = $ComputerName }
@@ -107,39 +107,39 @@
 
         #Create the connection and channel
         $Connection = New-RabbitMqConnectionFactory @ConnParams
-		$Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
+        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
 
 
-		#Create our consumer
-		$Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
-		$Channel.BasicConsume($QueueResult.QueueName, [bool](!$RequireAck), $Consumer) > $Null
+        #Create our consumer
+        $Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
+        $Channel.BasicConsume($QueueResult.QueueName, [bool](!$RequireAck), $Consumer) > $Null
 
-		$Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
+        $Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
 
-		#Listen on an infinite loop but still use timeouts so Ctrl+C will work!
-		$Timeout = New-TimeSpan -Seconds $LoopInterval
-		$Message = $null
-		while($true)
+        #Listen on an infinite loop but still use timeouts so Ctrl+C will work!
+        $Timeout = New-TimeSpan -Seconds $LoopInterval
+        $Message = $null
+        while($true)
         {
-			if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
+            if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
             {
-				ConvertFrom-RabbitMqDelivery -Delivery $Delivery
+                ConvertFrom-RabbitMqDelivery -Delivery $Delivery
                 if($RequireAck)
                 {
-				    $Channel.BasicAck($Delivery.DeliveryTag, $false)
+                    $Channel.BasicAck($Delivery.DeliveryTag, $false)
                 }
-			}
-		}
-	}
+            }
+        }
+    }
     finally
     {
-		if($Channel)
+        if($Channel)
         {
-			$Channel.Close()
-		}
-		if($Connection -and $Connection.IsOpen)
+            $Channel.Close()
+        }
+        if($Connection -and $Connection.IsOpen)
         {
-			$Connection.Close()
-		}
-	}
+            $Connection.Close()
+        }
+    }
 }

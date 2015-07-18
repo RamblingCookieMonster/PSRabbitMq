@@ -65,7 +65,7 @@
     param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
-		[parameter(Mandatory = $True)]
+        [parameter(Mandatory = $True)]
         [string]$Exchange,
 
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
@@ -89,20 +89,20 @@
 
         [int]$LoopInterval = 1,
 
-		[ScriptBlock]$Action,
+        [ScriptBlock]$Action,
 
         [PSCredential]$Credential,
 
         [System.Security.Authentication.SslProtocols]$Ssl
-	)
+    )
 
-	$ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck
+    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck
     Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
-		param(
-			$ComputerName,
-			$Exchange,
-			$Key,
-			$Action,
+        param(
+            $ComputerName,
+            $Exchange,
+            $Key,
+            $Action,
             $Credential,
             $Ssl,
             $LoopInterval,
@@ -111,12 +111,12 @@
             $Exclusive,
             $AutoDelete,
             $RequireAck
-		)
+        )
 
-		$ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
-		try
+        $ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
+        try
         {
-			Import-Module PSRabbitMq
+            Import-Module PSRabbitMq
 
             #Build the connection and channel params
             $ConnParams = @{ ComputerName = $ComputerName }
@@ -135,39 +135,39 @@
 
             #Create the connection and channel
             $Connection = New-RabbitMqConnectionFactory @ConnParams
-		    $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
+            $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
 
-			#Create our consumer
-			$Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
-			$Channel.BasicConsume($QueueResult.QueueName, [bool](!$RequireAck), $Consumer) > $Null
+            #Create our consumer
+            $Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
+            $Channel.BasicConsume($QueueResult.QueueName, [bool](!$RequireAck), $Consumer) > $Null
 
-			$Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
+            $Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
 
-			#Listen on an infinite loop but still use timeouts so Ctrl+C will work!
-			$Timeout = New-TimeSpan -Seconds $LoopInterval
-			$Message = $null
-			while($True)
+            #Listen on an infinite loop but still use timeouts so Ctrl+C will work!
+            $Timeout = New-TimeSpan -Seconds $LoopInterval
+            $Message = $null
+            while($True)
             {
-				if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
+                if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
                 {
-					ConvertFrom-RabbitMqDelivery -Delivery $Delivery | ForEach-Object $ActionSB
-	                if($RequireAck)
+                    ConvertFrom-RabbitMqDelivery -Delivery $Delivery | ForEach-Object $ActionSB
+                    if($RequireAck)
                     {
-				        $Channel.BasicAck($Delivery.DeliveryTag, $false)
+                        $Channel.BasicAck($Delivery.DeliveryTag, $false)
                     }
                 }
-			}
-		}
+            }
+        }
         finally
         {
-			if($Channel)
+            if($Channel)
             {
-				$Channel.Close()
-			}
-			if($Connection -and $Connection.IsOpen)
+                $Channel.Close()
+            }
+            if($Connection -and $Connection.IsOpen)
             {
-				$Connection.Close()
-			}
-		}
-	}
+                $Connection.Close()
+            }
+        }
+    }
 }
