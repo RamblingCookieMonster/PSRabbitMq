@@ -33,8 +33,8 @@
 
     .EXAMPLE
         $Channel = Connect-RabbitMqChannel -Connection $Connection -Exchange MyExchange -Key MyQueue
-#>
-
+ #>
+    [outputType([RabbitMQ.Client.Framing.Impl.Model])]
     [cmdletbinding(DefaultParameterSetName = 'NoQueueName')]
     param(
 
@@ -43,22 +43,39 @@
         [parameter(Mandatory = $True)]
         [string]$Exchange,
 
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $false)]
         [string]$Key,
 
         [parameter(ParameterSetName = 'QueueName',
                    Mandatory = $True)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',
+                   Mandatory = $True)]
         [string]$QueueName,
 
         [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$Durable = $true,
 
         [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$Exclusive = $False,
 
         [parameter(ParameterSetName = 'QueueName')]
-        [bool]$AutoDelete = $False
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
+        [bool]$AutoDelete = $False,
+        
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [uint32]$prefetchSize,
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [uint16]$prefetchCount,
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [switch]$global
     )
     Try
     {
@@ -77,7 +94,9 @@
         {
             $QueueResult = $Channel.QueueDeclare()
         }
-
+        if($PsCmdlet.ParameterSetName.Contains('BasicQoS')) {
+         $channel.BasicQos($prefetchSize,$prefetchCount,$global)
+        }
         #Bind our queue to the ServerBuilds exchange
         $Channel.QueueBind($QueueName, $Exchange, $Key)
         $Channel

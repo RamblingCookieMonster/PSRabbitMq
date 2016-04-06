@@ -69,20 +69,27 @@
         [string]$Exchange,
 
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [string]$Key,
 
         [parameter(ParameterSetName = 'QueueName',
                    Mandatory = $True)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',
+                   Mandatory = $True)]
         [string]$QueueName,
 
         [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$Durable = $true,
 
         [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$Exclusive = $False,
 
         [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$AutoDelete = $False,
 
         [switch]$RequireAck,
@@ -93,7 +100,17 @@
 
         [PSCredential]$Credential,
 
-        [System.Security.Authentication.SslProtocols]$Ssl
+        [System.Security.Authentication.SslProtocols]$Ssl,
+        
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [uint32]$prefetchSize,
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [uint16]$prefetchCount,
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [switch]$global
     )
 
     $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck
@@ -110,7 +127,10 @@
             $Durable,
             $Exclusive,
             $AutoDelete,
-            $RequireAck
+            $RequireAck,
+            $prefetchSize,
+            $prefetchCount,
+            $global
         )
 
         $ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
@@ -130,6 +150,11 @@
                 $ChanParams.Add('Durable' ,$Durable)
                 $ChanParams.Add('Exclusive',$Exclusive)
                 $ChanParams.Add('AutoDelete' ,$AutoDelete)
+            }
+            if($PsCmdlet.ParameterSetName.Contains('BasicQoS')) {
+                $ChanParams.Add('prefetchSize',$prefetchSize)
+                $ChanParams.Add('prefetchCount',$prefetchCount)
+                $ChanParams.Add('global',$global)
             }
             
 
