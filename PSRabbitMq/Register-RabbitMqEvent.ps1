@@ -113,7 +113,7 @@
         [switch]$global
     )
 
-    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck
+    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global
     Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
         param(
             $ComputerName,
@@ -151,7 +151,7 @@
                 $ChanParams.Add('Exclusive',$Exclusive)
                 $ChanParams.Add('AutoDelete' ,$AutoDelete)
             }
-            if($PsCmdlet.ParameterSetName.Contains('BasicQoS')) {
+            if($prefetchSize) {
                 $ChanParams.Add('prefetchSize',$prefetchSize)
                 $ChanParams.Add('prefetchCount',$prefetchCount)
                 $ChanParams.Add('global',$global)
