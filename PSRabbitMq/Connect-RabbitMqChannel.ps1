@@ -13,7 +13,7 @@
         Optional PSCredential to connect to RabbitMq with
 
     .PARAMETER Key
-        Routing Key to look for
+        Routing Keys to look for
 
         If you specify a QueueName and no Key, we use the QueueName as the key
 
@@ -30,17 +30,6 @@
 
     .PARAMETER AutoDelete
         If queuename is specified, this needs to match whether it is AutoDelete
-
-    .PARAMETER prefetchSize
-        Maximum amount of content (measured in octets) that the server will deliver, 0 if unlimited
-
-        https://www.rabbitmq.com/consumer-prefetch.html
-
-    .PARAMETER prefetchCount
-        maximum number of unacknowledged messages that the server will deliver to a channel/consumers, 0 if unlimited
-
-    .PARAMETER global
-        true if the settings should be applied to the entire channel rather than each consumer
 
     .EXAMPLE
         $Channel = Connect-RabbitMqChannel -Connection $Connection -Exchange MyExchange -Key MyQueue
@@ -59,7 +48,7 @@
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [string]$Key,
+        [string[]]$Key,
 
         [parameter(ParameterSetName = 'QueueName',
                    Mandatory = $True,ValueFromPipelineByPropertyName = $true)]
@@ -109,8 +98,10 @@
         if($PsCmdlet.ParameterSetName.Contains('BasicQoS')) {
          $channel.BasicQos($prefetchSize,$prefetchCount,$global)
         }
-        #Bind our queue to the $exchange
-        $Channel.QueueBind($QueueName, $Exchange, $Key)
+        #Bind our queue to the ServerBuilds exchange
+        foreach ($keyItem in $key) {
+            $Channel.QueueBind($QueueName, $Exchange, $KeyItem)
+        }
         $Channel
     }
     Catch
