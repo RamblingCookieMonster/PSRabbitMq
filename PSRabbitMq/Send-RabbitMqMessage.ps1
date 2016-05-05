@@ -38,6 +38,9 @@
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER vhost
+        create a connection via the specified virtual host, default is /
+
     .EXAMPLE
         Send-RabbitMqMessage -ComputerName RabbitMq.Contoso.com -Exchange MyExchange -Key "wat" -InputObject $Object
 
@@ -68,7 +71,10 @@
 
         [PSCredential]$Credential,
 
-        [System.Security.Authentication.SslProtocols]$Ssl
+        [System.Security.Authentication.SslProtocols]$Ssl,
+
+        [parameter(Mandatory = $false)]
+        [string]$vhost
     )
     begin
     {
@@ -78,6 +84,7 @@
         {
             'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
             'Credential' { $ConnParams.Add('Credential',$Credential) }
+            'vhost'      { $ConnParams.Add('vhost',$vhost) }
         }
         Write-Verbose "Connection parameters: $($ConnParams | Out-String)"
 

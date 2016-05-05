@@ -15,7 +15,7 @@
         RabbitMq Exchange
 
     .PARAMETER Key
-        Routing Key to look for
+        Routing Keys to look for
 
         If you specify a QueueName and no Key, we use the QueueName as the key
 
@@ -66,23 +66,29 @@
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
         [parameter(Mandatory = $True)]
+        [AllowEmptyString()]
         [string]$Exchange,
 
-        [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
-        [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
-        [string]$Key,
+        [parameter(ParameterSetName = 'NoQueueName', Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
+        [parameter(ParameterSetName = 'QueueName', Mandatory = $false)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
+        [string[]]$Key,
 
-        [parameter(ParameterSetName = 'QueueName',
-                   Mandatory = $True)]
+        [parameter(ParameterSetName = 'QueueName', Mandatory = $True)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $True)]
         [string]$QueueName,
 
         [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$Durable = $true,
 
         [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$Exclusive = $False,
 
         [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$AutoDelete = $False,
 
         [switch]$RequireAck,
@@ -93,10 +99,22 @@
 
         [PSCredential]$Credential,
 
-        [System.Security.Authentication.SslProtocols]$Ssl
+        [System.Security.Authentication.SslProtocols]$Ssl,
+
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
+        [uint32]$prefetchSize,
+
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
+        [uint16]$prefetchCount,
+
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
+        [switch]$global
     )
 
-    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck
+    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global
     Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
         param(
             $ComputerName,
@@ -110,7 +128,10 @@
             $Durable,
             $Exclusive,
             $AutoDelete,
-            $RequireAck
+            $RequireAck,
+            $prefetchSize,
+            $prefetchCount,
+            $global
         )
 
         $ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
@@ -130,6 +151,11 @@
                 $ChanParams.Add('Durable' ,$Durable)
                 $ChanParams.Add('Exclusive',$Exclusive)
                 $ChanParams.Add('AutoDelete' ,$AutoDelete)
+            }
+            if($prefetchSize) {
+                $ChanParams.Add('prefetchSize',$prefetchSize)
+                $ChanParams.Add('prefetchCount',$prefetchCount)
+                $ChanParams.Add('global',$global)
             }
             
 

@@ -1,42 +1,47 @@
 ﻿Function New-RabbitMqConnectionFactory {
-<#
-.SYNOPSIS
+ <#
+   .SYNOPSIS
     Create a RabbitMQ client connection
 
-.DESCRIPTION
+   .DESCRIPTION
     Create a RabbitMQ client connection
 
     Builds a RabbitMQ.Client.ConnectionFactory based on parameters, invokes CreateConnection method.
 
-.PARAMETER ComputerName
+   .PARAMETER ComputerName
     RabbitMq host
 
     If SSL is specified, we use this as the SslOption server name as well.
 
-.PARAMETER Credential
+   .PARAMETER Credential
     Optional PSCredential to connect to RabbitMq with
 
-.PARAMETER Ssl
+   .PARAMETER Ssl
     Optional Ssl version to connect to RabbitMq with
 
     If specified, we use ComputerName as the SslOption ServerName property.
 
-.EXAMPLE
+   .PARAMETER vhost
+    create a connection via the specified virtual host, default is /
+
+   .EXAMPLE
     $Connection = New-RabbitMqConnectionFactory -ComputerName RabbitMq.Contoso.com -Ssl Tls12 -Credential $Credential
 
     # Connect to RabbitMq.contoso.com over SSL (use tls 1.2), with credentials in $Credential
 
-.EXAMPLE
+   .EXAMPLE
     $Connection = New-RabbitMqConnectionFactory -ComputerName RabbitMq.Contoso.com
 
     # Connect to RabbitMq.contoso.com
-#>
+ #>
 
     [cmdletbinding()]
     param(
         [string]$ComputerName,
         [PSCredential]$Credential,
-        [System.Security.Authentication.SslProtocols]$Ssl
+        [System.Security.Authentication.SslProtocols]$Ssl,
+        [parameter(Mandatory = $false)]
+        [string]$vhost
     )
     Try
     {
@@ -45,6 +50,11 @@
         #Add the hostname
         $HostNameProp = [RabbitMQ.Client.ConnectionFactory].GetField("HostName")
         $HostNameProp.SetValue($Factory, $ComputerName)
+        
+        if($vhost) {
+            $vhostProp = [RabbitMQ.Client.ConnectionFactory].GetProperty("VirtualHost")
+            $vhostProp.SetValue($Factory, $vhost)
+        }
     
         #Add cred and SSL info
         if($Credential)

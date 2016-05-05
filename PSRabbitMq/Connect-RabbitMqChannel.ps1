@@ -13,7 +13,7 @@
         Optional PSCredential to connect to RabbitMq with
 
     .PARAMETER Key
-        Routing Key to look for
+        Routing Keys to look for
 
         If you specify a QueueName and no Key, we use the QueueName as the key
 
@@ -33,32 +33,52 @@
 
     .EXAMPLE
         $Channel = Connect-RabbitMqChannel -Connection $Connection -Exchange MyExchange -Key MyQueue
-#>
-
+ #>
+    [outputType([RabbitMQ.Client.Framing.Impl.Model])]
     [cmdletbinding(DefaultParameterSetName = 'NoQueueName')]
     param(
 
         $Connection,
 
-        [parameter(Mandatory = $True)]
+        [parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
+        [AllowEmptyString()]
         [string]$Exchange,
 
-        [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
-        [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
-        [string]$Key,
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'QueueName',Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [string[]]$Key,
 
         [parameter(ParameterSetName = 'QueueName',
-                   Mandatory = $True)]
+                   Mandatory = $True,ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',
+                   Mandatory = $True,ValueFromPipelineByPropertyName = $true)]
         [string]$QueueName,
 
-        [parameter(ParameterSetName = 'QueueName')]
+        [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
         [bool]$Durable = $true,
 
-        [parameter(ParameterSetName = 'QueueName')]
+        [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
         [bool]$Exclusive = $False,
 
-        [parameter(ParameterSetName = 'QueueName')]
-        [bool]$AutoDelete = $False
+        [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
+        [bool]$AutoDelete = $False,
+        
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [uint32]$prefetchSize,
+
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [uint16]$prefetchCount,
+
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [switch]$global
     )
     Try
     {
@@ -77,9 +97,13 @@
         {
             $QueueResult = $Channel.QueueDeclare()
         }
-
-        #Bind our queue to the ServerBuilds exchange
-        $Channel.QueueBind($QueueName, $Exchange, $Key)
+        if($PsCmdlet.ParameterSetName.Contains('BasicQoS')) {
+         $channel.BasicQos($prefetchSize,$prefetchCount,$global)
+        }
+        #Bind our queue to the exchange
+        foreach ($keyItem in $key) {
+            $Channel.QueueBind($QueueName, $Exchange, $KeyItem)
+        }
         $Channel
     }
     Catch
