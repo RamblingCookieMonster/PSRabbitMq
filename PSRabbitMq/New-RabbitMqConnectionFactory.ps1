@@ -21,6 +21,9 @@
 
     If specified, we use ComputerName as the SslOption ServerName property.
 
+   .PARAMETER vhost
+    create a connection via the specified virtual host, default is /
+
    .EXAMPLE
     $Connection = New-RabbitMqConnectionFactory -ComputerName RabbitMq.Contoso.com -Ssl Tls12 -Credential $Credential
 

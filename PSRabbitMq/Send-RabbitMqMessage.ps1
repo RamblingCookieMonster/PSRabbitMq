@@ -38,6 +38,9 @@
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER vhost
+        create a connection via the specified virtual host, default is /
+
     .EXAMPLE
         Send-RabbitMqMessage -ComputerName RabbitMq.Contoso.com -Exchange MyExchange -Key "wat" -InputObject $Object
 
