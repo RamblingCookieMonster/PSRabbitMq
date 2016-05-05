@@ -52,6 +52,17 @@
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER prefetchSize
+        Maximum amount of content (measured in octets) that the server will deliver, 0 if unlimited
+
+        https://www.rabbitmq.com/consumer-prefetch.html
+
+    .PARAMETER prefetchCount
+        maximum number of unacknowledged messages that the server will deliver to a channel/consumers, 0 if unlimited
+
+    .PARAMETER global
+        true if the settings should be applied to the entire channel rather than each consumer
+
     .EXAMPLE
         Register-RabbitMqEvent -ComputerName RabbitMq.Contoso.com -Exchange TestFanExc -Key 'wat' -Credential $Credential -Ssl Tls12 -QueueName TestQueue -Action {"HI! $_"}
 
