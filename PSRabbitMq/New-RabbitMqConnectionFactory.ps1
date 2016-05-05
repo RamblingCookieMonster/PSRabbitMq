@@ -52,8 +52,8 @@
         $HostNameProp.SetValue($Factory, $ComputerName)
         
         if($vhost) {
-         $vhostProp = [RabbitMQ.Client.ConnectionFactory].GetProperty("VirtualHost")
-         $vhostProp.SetValue($Factory, $vhost)
+            $vhostProp = [RabbitMQ.Client.ConnectionFactory].GetProperty("VirtualHost")
+            $vhostProp.SetValue($Factory, $vhost)
         }
     
         #Add cred and SSL info

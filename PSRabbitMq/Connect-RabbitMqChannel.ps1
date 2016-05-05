@@ -71,9 +71,11 @@
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [uint32]$prefetchSize,
+
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [uint16]$prefetchCount,
+
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [switch]$global
@@ -98,7 +100,7 @@
         if($PsCmdlet.ParameterSetName.Contains('BasicQoS')) {
          $channel.BasicQos($prefetchSize,$prefetchCount,$global)
         }
-        #Bind our queue to the ServerBuilds exchange
+        #Bind our queue to the exchange
         foreach ($keyItem in $key) {
             $Channel.QueueBind($QueueName, $Exchange, $KeyItem)
         }

@@ -84,7 +84,7 @@
         {
             'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
             'Credential' { $ConnParams.Add('Credential',$Credential) }
-            'vhost' { $ConnParams.Add('vhost',$vhost) }
+            'vhost'      { $ConnParams.Add('vhost',$vhost) }
         }
         Write-Verbose "Connection parameters: $($ConnParams | Out-String)"
 
