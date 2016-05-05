@@ -40,41 +40,42 @@
 
         $Connection,
 
-        [parameter(Mandatory = $True)]
+        [parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
+        [AllowEmptyString()]
         [string]$Exchange,
 
-        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
-        [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
-        [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $false)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'QueueName',Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [string]$Key,
 
         [parameter(ParameterSetName = 'QueueName',
-                   Mandatory = $True)]
+                   Mandatory = $True,ValueFromPipelineByPropertyName = $true)]
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',
-                   Mandatory = $True)]
+                   Mandatory = $True,ValueFromPipelineByPropertyName = $true)]
         [string]$QueueName,
 
-        [parameter(ParameterSetName = 'QueueName')]
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
+        [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
         [bool]$Durable = $true,
 
-        [parameter(ParameterSetName = 'QueueName')]
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
+        [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
         [bool]$Exclusive = $False,
 
-        [parameter(ParameterSetName = 'QueueName')]
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
+        [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
         [bool]$AutoDelete = $False,
         
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
-        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [uint32]$prefetchSize,
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
-        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [uint16]$prefetchCount,
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
-        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [switch]$global
     )
     Try

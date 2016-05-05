@@ -66,6 +66,7 @@
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
         [parameter(Mandatory = $True)]
+        [AllowEmptyString()]
         [string]$Exchange,
 
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
