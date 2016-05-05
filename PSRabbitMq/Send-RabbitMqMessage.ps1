@@ -68,7 +68,10 @@
 
         [PSCredential]$Credential,
 
-        [System.Security.Authentication.SslProtocols]$Ssl
+        [System.Security.Authentication.SslProtocols]$Ssl,
+
+        [parameter(Mandatory = $false)]
+        [string]$vhost
     )
     begin
     {
@@ -78,6 +81,7 @@
         {
             'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
             'Credential' { $ConnParams.Add('Credential',$Credential) }
+            'vhost' { $ConnParams.Add('vhost',$vhost) }
         }
         Write-Verbose "Connection parameters: $($ConnParams | Out-String)"
 

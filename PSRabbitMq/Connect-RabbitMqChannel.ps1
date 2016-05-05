@@ -109,7 +109,7 @@
         if($PsCmdlet.ParameterSetName.Contains('BasicQoS')) {
          $channel.BasicQos($prefetchSize,$prefetchCount,$global)
         }
-        #Bind our queue to the ServerBuilds exchange
+        #Bind our queue to the $exchange
         $Channel.QueueBind($QueueName, $Exchange, $Key)
         $Channel
     }
