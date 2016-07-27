@@ -69,16 +69,14 @@
         [AllowEmptyString()]
         [string]$Exchange,
 
-        [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
-        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
-        [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
+        [parameter(ParameterSetName = 'NoQueueName', Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
+        [parameter(ParameterSetName = 'QueueName', Mandatory = $false)]
         [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [string[]]$Key,
 
-        [parameter(ParameterSetName = 'QueueName',
-                   Mandatory = $True)]
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS',
-                   Mandatory = $True)]
+        [parameter(ParameterSetName = 'QueueName', Mandatory = $True)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $True)]
         [string]$QueueName,
 
         [parameter(ParameterSetName = 'QueueName')]
@@ -102,15 +100,17 @@
         [PSCredential]$Credential,
 
         [System.Security.Authentication.SslProtocols]$Ssl,
-        
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
-        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
         [uint32]$prefetchSize,
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
-        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
         [uint16]$prefetchCount,
-        [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true)]
-        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true)]
+
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
+        [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
         [switch]$global
     )
 
