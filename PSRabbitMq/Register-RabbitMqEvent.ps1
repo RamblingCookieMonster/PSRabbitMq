@@ -52,6 +52,10 @@
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER IncludeEnvelope
+        Include the Message envelope (Metadata) of the message. If ommited, only 
+        the payload (body of the message) is returned
+
     .EXAMPLE
         Register-RabbitMqEvent -ComputerName RabbitMq.Contoso.com -Exchange TestFanExc -Key 'wat' -Credential $Credential -Ssl Tls12 -QueueName TestQueue -Action {"HI! $_"}
 
@@ -97,7 +101,9 @@
 
         [ScriptBlock]$Action,
 
-        [PSCredential]$Credential,
+        [PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential,
 
         [System.Security.Authentication.SslProtocols]$Ssl,
 
@@ -111,16 +117,20 @@
 
         [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
-        [switch]$global
+        [switch]$global,
+
+        [switch]$IncludeEnvelope
     )
 
-    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global
+    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,$IncludeEnvelope
     Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
         param(
             $ComputerName,
             $Exchange,
             $Key,
             $Action,
+            [PSCredential]
+            [System.Management.Automation.Credential()]
             $Credential,
             $Ssl,
             $LoopInterval,
@@ -131,7 +141,8 @@
             $RequireAck,
             $prefetchSize,
             $prefetchCount,
-            $global
+            $global,
+            $includeEnvelope
         )
 
         $ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
@@ -176,7 +187,7 @@
             {
                 if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
                 {
-                    ConvertFrom-RabbitMqDelivery -Delivery $Delivery | ForEach-Object $ActionSB
+                    ConvertFrom-RabbitMqDelivery -Delivery $Delivery -IncludeEnvelope:([bool]$IncludeEnvelope) | ForEach-Object $ActionSB
                     if($RequireAck)
                     {
                         $Channel.BasicAck($Delivery.DeliveryTag, $false)

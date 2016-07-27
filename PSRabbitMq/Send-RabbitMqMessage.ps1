@@ -66,6 +66,7 @@
         [string]$Key,
 
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [Alias('Payload')]
         $InputObject,
 
         [switch]$Persistent,
@@ -78,11 +79,28 @@
 
         [System.Security.Authentication.SslProtocols]$Ssl,
 
-        [parameter(Mandatory = $false)]
         [string]$vhost = '/',
 
         [ValidateSet('application/clixml+xml','application-json','text/xml', 'text/plain')]
-        [string]$ContentType = 'application/clixml+xml'
+        [string]$ContentType = 'application/clixml+xml',
+
+        [string]$ReplyTo,
+
+        [RabbitMQ.Client.PublicationAddress]$ReplyToAddress,
+
+        [string]$CorrelationID,
+
+        [byte]$Priority,
+
+        [byte]$DeliveryMode,
+
+        [string]$Type,
+
+        [string]$MessageID,
+
+        [datetime]$timestamp,
+
+        [System.Collections.Generic.IDictionary[string,systemObject]]$headers
     )
     begin
     {
@@ -111,6 +129,41 @@
         }
 
         $BodyProps.ContentType = $ContentType
+        
+        if ($timestamp) 
+        { #converting a .Net [datetime] to an AmqpTimestamp (unix time)
+            $BodyProps.Timestamp = [RabbitMQ.Client.AmqpTimestamp][int][double]::Parse((Get-date $timestamp -UFormat %s))
+        }
+
+        if ($ReplyTo)
+        {
+            $BodyProps.ReplyTo = $ReplyTo
+        }
+
+        if ($ReplyToAddress)
+        {
+            $BodyProps.ReplyToAddress = $ReplyToAddress
+        }
+
+        if ($CorrelationID)
+        {
+            $BodyProps.CorrelationId = $CorrelationID
+        }
+
+        if ($priority)
+        {
+            $BodyProps.Priority = $priority
+        }
+        
+        if ($DeliveryMode)
+        {
+            $BodyProps.DeliveryMode = $DeliveryMode
+        }
+
+        if ($headers)
+        {
+            $BodyProps.Headers = $headers
+        }
     }
     process
     {
@@ -128,19 +181,24 @@
                     {
                         Export-Clixml -Path $TempFile -InputObject $InputObject -Depth $Depth -Encoding Utf8
                         $Serialized = [IO.File]::ReadAllLines($TempFile, [Text.Encoding]::UTF8)
-                        Remove-Item -Path $TempFile -Force
                     }
                     finally
                     {
-                        if( (Test-Path -Path $TempFile) )
+                        if ( (Test-Path -Path $TempFile) )
                         {
                             Remove-Item -Path $TempFile -Force
                         }
                     }
                 }
             }
-            'application/json' {
-                $Serialized = ConvertTo-Json -InputObject $InputObject  -Compress -Depth $Depth
+            'application/json' { #Convert to JSON is it's invalid JSON
+                try {
+                    $null = ConvertFrom-Json -InputObject $InputObject -ErrorAction Stop
+                    $Serialized = $InputObject
+                }
+                catch {
+                    $Serialized = ConvertTo-Json -InputObject $InputObject  -Compress -Depth $Depth
+                }
             }
             'text/xml' {
                 $Serialized = ([xml]$InputObject).OuterXml
@@ -149,7 +207,7 @@
                 $Serialized = [string]$InputObject
             }
         }
-        
+
         $Body = [System.Text.Encoding]::UTF8.GetBytes($Serialized)
         $Channel.BasicPublish($Exchange, $Key, $BodyProps, $Body)
     }
