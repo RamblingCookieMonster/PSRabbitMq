@@ -41,6 +41,9 @@
     .PARAMETER vhost
         create a connection via the specified virtual host, default is /
 
+    .PARAMETER ContentType
+        Specify the ContentType for the message de/serialization: 'application/clixml+xml','application-json','text/xml', 'text/plain'
+
     .EXAMPLE
         Send-RabbitMqMessage -ComputerName RabbitMq.Contoso.com -Exchange MyExchange -Key "wat" -InputObject $Object
 
@@ -69,15 +72,24 @@
 
         [Int32]$Depth = 2,
 
-        [PSCredential]$Credential,
+        [PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential  = [System.Management.Automation.PSCredential]::Empty,
 
         [System.Security.Authentication.SslProtocols]$Ssl,
 
         [parameter(Mandatory = $false)]
-        [string]$vhost
+        [string]$vhost = '/',
+
+        [ValidateSet('application/clixml+xml','application-json','text/xml', 'text/plain')]
+        [string]$ContentType = 'application/clixml+xml'
     )
     begin
     {
+        if ($Credential -eq [System.Management.Automation.PSCredential]::Empty) {
+            $null = $PSBoundParameters.Remove('Credential')
+        }
+
         #Build the connection. Filter bound parameters, splat them.
         $ConnParams = @{ ComputerName = $ComputerName }
         Switch($PSBoundParameters.Keys)
@@ -97,32 +109,47 @@
         {
             $BodyProps.SetPersistent($true)
         }
-        $BodyProps.ContentType = "application/clixml+xml"
+
+        $BodyProps.ContentType = $ContentType
     }
     process
     {
-        try
-        {
-            $Serialized = [System.Management.Automation.PSSerializer]::Serialize($InputObject, $Depth)
-        }
-        catch
-        {
-            #This is for V2 clients...
-            $TempFile = [io.path]::GetTempFileName()
-            try
-            {
-                Export-Clixml -Path $TempFile -InputObject $InputObject -Depth $Depth -Encoding Utf8
-                $Serialized = [IO.File]::ReadAllLines($TempFile, [Text.Encoding]::UTF8)
-            }
-            finally
-            {
-                if( (Test-Path -Path $TempFile) )
+        switch ($ContentType) {
+            'application/clixml+xml' {
+                try
                 {
-                    Remove-Item -Path $TempFile -Force
+                    $Serialized = [System.Management.Automation.PSSerializer]::Serialize($InputObject, $Depth)
+                }
+                catch
+                {
+                    #This is for V2 clients...
+                    $TempFile = [io.path]::GetTempFileName()
+                    try
+                    {
+                        Export-Clixml -Path $TempFile -InputObject $InputObject -Depth $Depth -Encoding Utf8
+                        $Serialized = [IO.File]::ReadAllLines($TempFile, [Text.Encoding]::UTF8)
+                        Remove-Item -Path $TempFile -Force
+                    }
+                    finally
+                    {
+                        if( (Test-Path -Path $TempFile) )
+                        {
+                            Remove-Item -Path $TempFile -Force
+                        }
+                    }
                 }
             }
+            'application/json' {
+                $Serialized = ConvertTo-Json -InputObject $InputObject  -Compress -Depth $Depth
+            }
+            'text/xml' {
+                $Serialized = ([xml]$InputObject).OuterXml
+            }
+            'text/plain' {
+                $Serialized = [string]$InputObject
+            }
         }
-
+        
         $Body = [System.Text.Encoding]::UTF8.GetBytes($Serialized)
         $Channel.BasicPublish($Exchange, $Key, $BodyProps, $Body)
     }
