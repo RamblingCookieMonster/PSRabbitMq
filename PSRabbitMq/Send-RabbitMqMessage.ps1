@@ -43,6 +43,36 @@
 
     .PARAMETER ContentType
         Specify the ContentType for the message de/serialization: 'application/clixml+xml','application-json','text/xml', 'text/plain'
+        
+    .PARAMETER ReplyTo
+        destination to reply to
+        
+    .PARAMETER ReplyToAddress
+        Convenience property; parses ReplyTo property using PublicationAddress.Parse, and serializes it using PublicationAddress.ToString. Returns null if ReplyTo property cannot be parsed by PublicationAddress.Parse.
+        
+    .PARAMETER CorrelationID
+        application correlation identifier
+        
+    .PARAMETER Priority
+        message priority, 0 to 9
+        
+    .PARAMETER DeliveryMode
+        non-persistent (1) or persistent (2)
+        
+    .PARAMETER ContentType
+        MIME content type
+        
+    .PARAMETER Type
+        Message type name that can be used by the application.
+        
+    .PARAMETER MessageID
+        application message identifier
+        
+    .PARAMETER TimeStamp
+        message timestamp
+        
+    .PARAMETER Headers
+        message header field table
 
     .EXAMPLE
         Send-RabbitMqMessage -ComputerName RabbitMq.Contoso.com -Exchange MyExchange -Key "wat" -InputObject $Object
