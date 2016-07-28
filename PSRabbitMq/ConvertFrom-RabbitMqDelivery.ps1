@@ -82,11 +82,13 @@
             'RoutingKey' = [string]$Delivery.RoutingKey
             'Exchange'   = [string]$Delivery.Exchange
             'Properties' = [PSCustomObject][ordered]@{
+                'ClusterId'        = [string]$Delivery.BasicProperties.ClusterId
+                'UserId'           = [string]$Delivery.BasicProperties.UserId
                 'reply_to'         = [string]$Delivery.BasicProperties.ReplyTo
                 'reply_to_Address' = [PSCustomObject][ordered]@{
                                     'ExchangeType' = $Delivery.BasicProperties.ReplyToAddress.ExchangeType
                                     'ExchangeName' = $Delivery.BasicProperties.ReplyToAddress.ExchangeName
-                                    'RoutingKey' = $Delivery.BasicProperties.ReplyToAddress.RoutingKey
+                                    'RoutingKey'   = $Delivery.BasicProperties.ReplyToAddress.RoutingKey
                                     }
                 'correlation_id'   = [string]$Delivery.BasicProperties.CorrelationId
                 'priority'         = [int]$Delivery.BasicProperties.Priority

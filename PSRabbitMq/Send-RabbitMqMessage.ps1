@@ -105,7 +105,7 @@
 
         [PSCredential]
         [System.Management.Automation.Credential()]
-        $Credential  = [System.Management.Automation.PSCredential]::Empty,
+        $Credential,
 
         [System.Security.Authentication.SslProtocols]$Ssl,
 
@@ -120,8 +120,10 @@
 
         [string]$CorrelationID,
 
+        [validatedRange(0,9)]
         [byte]$Priority,
 
+        [validateSet(1,2)]
         [byte]$DeliveryMode,
 
         [string]$Type,
@@ -134,10 +136,7 @@
     )
     begin
     {
-        if ($Credential -eq [System.Management.Automation.PSCredential]::Empty) {
-            $null = $PSBoundParameters.Remove('Credential')
-        }
-
+       
         #Build the connection. Filter bound parameters, splat them.
         $ConnParams = @{ ComputerName = $ComputerName }
         Switch($PSBoundParameters.Keys)
@@ -160,39 +159,19 @@
 
         $BodyProps.ContentType = $ContentType
         
-        if ($timestamp) 
-        { #converting a .Net [datetime] to an AmqpTimestamp (unix time)
-            $BodyProps.Timestamp = [RabbitMQ.Client.AmqpTimestamp][int][double]::Parse((Get-date $timestamp -UFormat %s))
-        }
-
-        if ($ReplyTo)
+        switch ($PSBoundParameters.Keys)
         {
-            $BodyProps.ReplyTo = $ReplyTo
-        }
-
-        if ($ReplyToAddress)
-        {
-            $BodyProps.ReplyToAddress = $ReplyToAddress
-        }
-
-        if ($CorrelationID)
-        {
-            $BodyProps.CorrelationId = $CorrelationID
-        }
-
-        if ($priority)
-        {
-            $BodyProps.Priority = $priority
-        }
-        
-        if ($DeliveryMode)
-        {
-            $BodyProps.DeliveryMode = $DeliveryMode
-        }
-
-        if ($headers)
-        {
-            $BodyProps.Headers = $headers
+            'timestamp' {
+                $BodyProps.Timestamp = [RabbitMQ.Client.AmqpTimestamp][int][double]::Parse(
+                                            (Get-date $timestamp -UFormat %s)
+                                       )
+            }
+            'ReplyTo'        { $BodyProps.ReplyTo = $ReplyTo} 
+            'ReplyToAddress' { $BodyProps.ReplyToAddress = $ReplyToAddress }
+            'CorrelationID'  { $BodyProps.CorrelationId = $CorrelationID }
+            'priority'       { $BodyProps.Priority = $priority }
+            'DeliveryMode'   { $BodyProps.DeliveryMode = $DeliveryMode }
+            'headers'        { $BodyProps.Headers = $headers }
         }
     }
     process
@@ -201,7 +180,7 @@
             'application/clixml+xml' {
                 try
                 {
-                    $Serialized = [System.Management.Automation.PSSerializer]::Serialize($InputObject, $Depth)
+                    $Serialized = [Management.Automation.PSSerializer]::Serialize($InputObject, $Depth)
                 }
                 catch
                 {
