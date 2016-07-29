@@ -3,4 +3,4 @@ PSRabbitMq/PSRabbitMq.xml
 #kitchen specifics
 /PSRabbitMq/.kitchen*
 /PSRabbitMq/tests
-/PSRabbitMq/example/dsc_configuration.ps1
+/PSRabbitMq/examples/dsc_configuration.ps1
