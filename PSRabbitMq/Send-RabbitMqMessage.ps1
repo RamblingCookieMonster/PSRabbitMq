@@ -120,7 +120,7 @@
 
         [string]$CorrelationID,
 
-        [validatedRange(0,9)]
+        [ValidateRange(0,9)]
         [byte]$Priority,
 
         [validateSet(1,2)]
@@ -132,7 +132,7 @@
 
         [datetime]$timestamp,
 
-        [System.Collections.Generic.IDictionary[string,systemObject]]$headers
+        [System.Collections.Generic.Dictionary[String,Object]]$headers
     )
     begin
     {
