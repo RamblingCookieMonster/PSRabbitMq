@@ -42,7 +42,7 @@
         create a connection via the specified virtual host, default is /
 
     .PARAMETER ContentType
-        Specify the ContentType for the message de/serialization: 'application/clixml+xml','application-json','text/xml', 'text/plain'
+        Specify the ContentType for the message de/serialization: 'application/clixml+xml','application/json','text/xml', 'text/plain'
         
     .PARAMETER ReplyTo
         destination to reply to
@@ -52,6 +52,9 @@
         
     .PARAMETER CorrelationID
         application correlation identifier
+
+    .PARAMETER Anonymous
+        Do not send UserID information in the properties of the message. Will send The credentials' Username by default.
         
     .PARAMETER Priority
         message priority, 0 to 9
@@ -70,6 +73,9 @@
         
     .PARAMETER TimeStamp
         message timestamp
+
+    .PARAMETER TTL
+        Set the Message Expiration time in milliseconds
         
     .PARAMETER Headers
         message header field table
@@ -111,7 +117,7 @@
 
         [string]$vhost = '/',
 
-        [ValidateSet('application/clixml+xml','application-json','text/xml', 'text/plain')]
+        [ValidateSet('application/clixml+xml','application/json','text/xml', 'text/plain')]
         [string]$ContentType = 'application/clixml+xml',
 
         [string]$ReplyTo,
@@ -119,6 +125,8 @@
         [RabbitMQ.Client.PublicationAddress]$ReplyToAddress,
 
         [string]$CorrelationID,
+
+        [switch]$Anonymous, 
 
         [ValidateRange(0,9)]
         [byte]$Priority,
@@ -131,6 +139,8 @@
         [string]$MessageID,
 
         [datetime]$timestamp,
+
+        [Int64]$TTL,
 
         [System.Collections.Generic.Dictionary[String,Object]]$headers
     )
@@ -169,9 +179,14 @@
             'ReplyTo'        { $BodyProps.ReplyTo = $ReplyTo} 
             'ReplyToAddress' { $BodyProps.ReplyToAddress = $ReplyToAddress }
             'CorrelationID'  { $BodyProps.CorrelationId = $CorrelationID }
+            'MessageID'      { $BodyProps.MessageID = $MessageID}
             'priority'       { $BodyProps.Priority = $priority }
             'DeliveryMode'   { $BodyProps.DeliveryMode = $DeliveryMode }
             'headers'        { $BodyProps.Headers = $headers }
+            'Type'           { $BodyProps.Type = $Type }
+            #If no Userid provided but Credential used, use Cred UserName
+            'Credential'     { if (-Not $Anonymous -and $Credential) { $BodyProps.UserId = $Credential.UserName } }
+            'TTL'            { $BodyProps.Expiration = $TTL.ToString()} #https://www.rabbitmq.com/ttl.html
         }
     }
     process

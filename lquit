@@ -1,0 +1,48 @@
+[1mdiff --git a/PSRabbitMq/Send-RabbitMqMessage.ps1 b/PSRabbitMq/Send-RabbitMqMessage.ps1[m
+[1mindex 8561723..9503e10 100644[m
+[1m--- a/PSRabbitMq/Send-RabbitMqMessage.ps1[m
+[1m+++ b/PSRabbitMq/Send-RabbitMqMessage.ps1[m
+[36m@@ -42,7 +42,7 @@[m
+         create a connection via the specified virtual host, default is /[m
+ [m
+     .PARAMETER ContentType[m
+[31m-        Specify the ContentType for the message de/serialization: 'application/clixml+xml','application-json','text/xml', 'text/plain'[m
+[32m+[m[32m        Specify the ContentType for the message de/serialization: 'application/clixml+xml','application/json','text/xml', 'text/plain'[m
+         [m
+     .PARAMETER ReplyTo[m
+         destination to reply to[m
+[36m@@ -111,7 +111,7 @@[m
+ [m
+         [string]$vhost = '/',[m
+ [m
+[31m-        [ValidateSet('application/clixml+xml','application-json','text/xml', 'text/plain')][m
+[32m+[m[32m        [ValidateSet('application/clixml+xml','application/json','text/xml', 'text/plain')][m
+         [string]$ContentType = 'application/clixml+xml',[m
+ [m
+         [string]$ReplyTo,[m
+[36m@@ -120,6 +120,8 @@[m
+ [m
+         [string]$CorrelationID,[m
+ [m
+[32m+[m[32m        [string]$UserID = $Credential.UserName,[m
+[32m+[m
+         [ValidateRange(0,9)][m
+         [byte]$Priority,[m
+ [m
+[36m@@ -151,6 +153,7 @@[m
+         $Connection = New-RabbitMqConnectionFactory @ConnParams[m
+ [m
+         $Channel = $Connection.CreateModel()[m
+[32m+[m[32m        $Channel.ExchangeDeclare($Exchange,$ExchangeType)[m
+         $BodyProps = $Channel.CreateBasicProperties()[m
+         if($Persistent)[m
+         {[m
+[36m@@ -169,6 +172,8 @@[m
+             'ReplyTo'        { $BodyProps.ReplyTo = $ReplyTo} [m
+             'ReplyToAddress' { $BodyProps.ReplyToAddress = $ReplyToAddress }[m
+             'CorrelationID'  { $BodyProps.CorrelationId = $CorrelationID }[m
+[32m+[m[32m            'MessageID'      { $BodyProps.MessageID = $MessageID}[m
+[32m+[m[32m            'UserID'         { if ($UserID) { $BodyProps.UserID = $UserID } }[m
+             'priority'       { $BodyProps.Priority = $priority }[m
+             'DeliveryMode'   { $BodyProps.DeliveryMode = $DeliveryMode }[m
+             'headers'        { $BodyProps.Headers = $headers }[m
