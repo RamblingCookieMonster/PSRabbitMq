@@ -121,8 +121,8 @@
 
         [switch]$IncludeEnvelope
     )
-
-    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,$IncludeEnvelope
+    
+    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
     Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
         param(
             $ComputerName,
@@ -142,7 +142,7 @@
             $prefetchSize,
             $prefetchCount,
             $global,
-            $includeEnvelope
+            $IncludeEnvelope
         )
 
         $ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
@@ -187,7 +187,7 @@
             {
                 if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
                 {
-                    ConvertFrom-RabbitMqDelivery -Delivery $Delivery -IncludeEnvelope:([bool]$IncludeEnvelope) | ForEach-Object $ActionSB
+                    ConvertFrom-RabbitMqDelivery -Delivery $Delivery -IncludeEnvelope:$IncludeEnvelope | ForEach-Object $ActionSB
                     if($RequireAck)
                     {
                         $Channel.BasicAck($Delivery.DeliveryTag, $false)

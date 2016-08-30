@@ -63,7 +63,13 @@
         non-persistent (1) or persistent (2)
         
     .PARAMETER ContentType
-        MIME content type
+        Set the MIME content type set in the BasicProperty of the RabbitMq .Net client Channel object.
+        Setting this overrides the ContentType regardless of the SerializeAs parameter.
+        Default to application/clixml+xml
+
+    .PARAMETER SerializeAs
+        Auto-serialize the content, and set the ContentType accordingly if not specified.
+        Default to application/clixml+xml
         
     .PARAMETER Type
         Message type name that can be used by the application.
@@ -92,6 +98,7 @@
         # Connects to RabbitMq.Contoso.com over tls 1.2 with credential in $Credential
         # Sends a message to the MyExchange exchange with the routing key 'wat', and a hash table in the message body
     #>
+    [CmdletBinding(DefaultParameterSetName="SerializeAs")] 
     param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
@@ -117,7 +124,9 @@
 
         [string]$vhost = '/',
 
-        [ValidateSet('application/clixml+xml','application/json','text/xml', 'text/plain')]
+        [ValidateSet('application/clixml+xml','application/json','text/xml', 'text/plain', 'NONE')]
+        [string]$SerializeAs = 'application/clixml+xml',
+
         [string]$ContentType = 'application/clixml+xml',
 
         [string]$ReplyTo,
@@ -142,7 +151,7 @@
 
         [Int64]$TTL,
 
-        [System.Collections.Generic.Dictionary[String,Object]]$headers
+        [hashtable]$headers
     )
     begin
     {
@@ -167,8 +176,19 @@
             $BodyProps.SetPersistent($true)
         }
 
-        $BodyProps.ContentType = $ContentType
-        
+        if ($PSBoundParameters.keys -contains 'SerializeAs' -and 
+            $PSBoundParameters.keys -notcontains 'ContentType' -and
+            $SerializeAs -ne 'NONE'
+           ) 
+        { 
+            $BodyProps.ContentType = $SerializeAs 
+        }
+        elseif($SerializeAs -ne 'NONE' -and
+                $PSBoundParameters.Keys -contains 'ContentType'
+              ) {
+            $BodyProps.ContentType = $ContentType 
+        }
+
         switch ($PSBoundParameters.Keys)
         {
             'timestamp' {
@@ -182,7 +202,14 @@
             'MessageID'      { $BodyProps.MessageID = $MessageID}
             'priority'       { $BodyProps.Priority = $priority }
             'DeliveryMode'   { $BodyProps.DeliveryMode = $DeliveryMode }
-            'headers'        { $BodyProps.Headers = $headers }
+            'headers'        { 
+                $HeadersFormatted = New-Object 'System.Collections.Generic.Dictionary[String,String]'
+                foreach ($key in $headers.Keys)
+                {
+                    $HeadersFormatted.Add([string]$key,$headers[$key])
+                }
+                $BodyProps.Headers = $HeadersFormatted 
+            }
             'Type'           { $BodyProps.Type = $Type }
             #If no Userid provided but Credential used, use Cred UserName
             'Credential'     { if (-Not $Anonymous -and $Credential) { $BodyProps.UserId = $Credential.UserName } }
@@ -191,7 +218,7 @@
     }
     process
     {
-        switch ($ContentType) {
+        switch ($SerializeAs) {
             'application/clixml+xml' {
                 try
                 {
@@ -215,7 +242,7 @@
                     }
                 }
             }
-            'application/json' { #Convert to JSON is it's invalid JSON
+            'application/json' { #Convert to JSON if it's invalid JSON
                 try {
                     $null = ConvertFrom-Json -InputObject $InputObject -ErrorAction Stop
                     $Serialized = $InputObject
@@ -230,9 +257,20 @@
             'text/plain' {
                 $Serialized = [string]$InputObject
             }
+            Default {#unsupported SerializeAs type, or NONE, try sending byte[], or default to String serialization
+                try {
+                    $Body = [byte[]]$InputObject 
+                }
+                catch {
+                    $Serialized = [string]$InputObject
+                }
+            }
+        }
+        if (!$Body)
+        {
+            $Body = [System.Text.Encoding]::UTF8.GetBytes($Serialized)
         }
 
-        $Body = [System.Text.Encoding]::UTF8.GetBytes($Serialized)
         $Channel.BasicPublish($Exchange, $Key, $BodyProps, $Body)
     }
     end

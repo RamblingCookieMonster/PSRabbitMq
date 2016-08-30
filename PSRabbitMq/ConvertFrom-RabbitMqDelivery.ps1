@@ -18,10 +18,21 @@
     .EXAMPLE
         ConvertFrom-RabbitMqDelivery -Delivery $Delivery
     #>
+    [cmdletBinding(DefaultParameterSetName='Default')]
     param(
         [RabbitMQ.Client.Events.BasicDeliverEventArgs]$Delivery,
-        [switch]$IncludeEnvelope
+
+        [Parameter(ParameterSetName = 'IncludeEnvelope')]
+        [switch]$IncludeEnvelope,
+
+        [Parameter(ParameterSetName = 'Raw')]
+        [switch]$Raw
     )
+    if ($Raw) {
+        Write-Output $Delivery
+        return #stop execution
+    }
+
     switch($Delivery.BasicProperties.ContentType) {
         'text/plain' {
             $Payload = [Text.Encoding]::UTF8.GetString($Delivery.Body)
@@ -72,7 +83,7 @@
         }
     }
 
-    if (-not $IncludeEnvelope)
+    if (!$IncludeEnvelope)
     {
         return $Payload
     }
