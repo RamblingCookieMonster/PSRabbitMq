@@ -175,9 +175,8 @@
         {
             $BodyProps.SetPersistent($true)
         }
-
-        if ($PSBoundParameters.keys -contains 'SerializeAs' -and 
-            $PSBoundParameters.keys -notcontains 'ContentType' -and
+        $test = $PSBoundParameters
+        if ($PSBoundParameters.keys -notcontains 'ContentType' -and
             $SerializeAs -ne 'NONE'
            ) 
         { 
