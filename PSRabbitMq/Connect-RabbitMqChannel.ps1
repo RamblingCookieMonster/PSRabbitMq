@@ -84,6 +84,8 @@
     {
         $Channel = $Connection.CreateModel()
 
+         Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Attempting connection to channel' -PercentComplete 80
+
         #Create a personal queue or bind to an existing queue
         if($QueueName)
         {
@@ -104,6 +106,9 @@
         foreach ($keyItem in $key) {
             $Channel.QueueBind($QueueName, $Exchange, $KeyItem)
         }
+
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status ('Conneccted to channel: {0}, {1}, {2}' -f $QueueName, $Exchange, $KeyItem) -PercentComplete 90
+
         $Channel
     }
     Catch

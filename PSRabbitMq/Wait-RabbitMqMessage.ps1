@@ -45,13 +45,19 @@
         Note: Without this, dequeue seems to empty a whole queue?
 
     .PARAMETER Timeout
-        Seconds. Timeout Wait-RabbitMqMessage after this expires. Defaults to 1 second
+        Seconds. Timeout Wait-RabbitMqMessage after this expires. Defaults to 10 second
 
     .PARAMETER LoopInterval
         Seconds. Timeout for each interval we wait for a RabbitMq message. Defaults to 1 second.
 
     .PARAMETER Credential
         Optional PSCredential to connect to RabbitMq with
+
+    .PARAMETER CertPath
+        Pkcs12/PFX formatted certificate to connect to RabbitMq with.  Prior to connecting, please make sure the system trusts the CA issuer or self-signed SCMB certifiate.
+
+    .PARAMETER CertPassphrase
+        The SecureString Pkcs12/PFX Passphrase of the certificate.
 
     .PARAMETER Ssl
         Optional Ssl version to connect to RabbitMq with
@@ -99,7 +105,7 @@
 
         [switch]$RequireAck,
 
-        [int]$Timeout = 1,
+        [int]$Timeout = 10,
 
         [int]$LoopInterval = 1,
 
@@ -107,10 +113,17 @@
         [System.Management.Automation.Credential()]
         $Credential,
 
+        [string]$CertPath,
+
+        [securestring]$CertPassphrase,
+
         [System.Security.Authentication.SslProtocols]$Ssl,
 
         [switch]$IncludeEnvelope
     )
+
+    Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Building connection' -PercentComplete 0
+
     try
     {
         #Build the connection and channel params
@@ -118,9 +131,11 @@
         $ChanParams = @{ Exchange = $Exchange }
         Switch($PSBoundParameters.Keys)
         {
-            'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
-            'Credential' { $ConnParams.Add('Credential',$Credential) }
-            'Key'        { $ChanParams.Add('Key',$Key)}
+            'Ssl'            { $ConnParams.Add('Ssl',$Ssl) }
+            'CertPath'       { $ConnParams.Add('CertPath',$CertPath)}
+            'CertPassphrase' { $ConnParams.Add('CertPassphrase',$CertPassphrase)}
+            'Credential'     { $ConnParams.Add('Credential',$Credential) }
+            'Key'            { $ChanParams.Add('Key',$Key)}
             'QueueName'
             {
                 $ChanParams.Add('QueueName',$QueueName)
@@ -133,7 +148,11 @@
 
         #Create the connection and channel
         $Connection = New-RabbitMqConnectionFactory @ConnParams
-        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Connection Established' -PercentComplete 75
+
+        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection    
+
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Connected' -Completed
 
         #Create our consumer
         $Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)
