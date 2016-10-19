@@ -49,6 +49,10 @@
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER IncludeEnvelope
+        Include the Message envelope (Metadata) of the message. If ommited, only 
+        the payload (body of the message) is returned
+
     .EXAMPLE
         Start-RabbitMqListener -ComputerName RabbitMq.Contoso.com -Exchange MyExchange -Key 'wat' -Credential $Credential -Ssl Tls12
 
@@ -82,9 +86,13 @@
 
         [int]$LoopInterval = 1,
 
-        [PSCredential]$Credential,
+        [PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential,
 
-        [System.Security.Authentication.SslProtocols]$Ssl
+        [System.Security.Authentication.SslProtocols]$Ssl,
+
+        [switch]$IncludeEnvelope
     )
     try
     {
@@ -118,12 +126,11 @@
 
         #Listen on an infinite loop but still use timeouts so Ctrl+C will work!
         $Timeout = New-TimeSpan -Seconds $LoopInterval
-        $Message = $null
         while($true)
         {
             if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))
             {
-                ConvertFrom-RabbitMqDelivery -Delivery $Delivery
+                ConvertFrom-RabbitMqDelivery -Delivery $Delivery -IncludeEnvelope:([bool]$IncludeEnvelope)
                 if($RequireAck)
                 {
                     $Channel.BasicAck($Delivery.DeliveryTag, $false)

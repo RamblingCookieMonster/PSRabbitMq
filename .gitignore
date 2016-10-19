@@ -1,1 +1,6 @@
 PSRabbitMq/PSRabbitMq.xml
+
+#kitchen specifics
+/PSRabbitMq/.kitchen*
+/PSRabbitMq/tests
+/PSRabbitMq/examples/dsc_configuration.ps1

@@ -58,6 +58,10 @@
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER IncludeEnvelope
+        Include the Message envelope (Metadata) of the message. If ommited, only 
+        the payload (body of the message) is returned
+
     .EXAMPLE
 	    Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Key "message.key"
 
@@ -99,9 +103,13 @@
 
         [int]$LoopInterval = 1,
 
-        [PSCredential]$Credential,
+        [PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential,
 
-        [System.Security.Authentication.SslProtocols]$Ssl
+        [System.Security.Authentication.SslProtocols]$Ssl,
+
+        [switch]$IncludeEnvelope
     )
     try
     {
@@ -150,7 +158,7 @@
             $MessageReceived = $false
             if($Consumer.Queue.Dequeue($RMQTimeout.TotalMilliseconds, [ref]$Delivery))
             {
-                ConvertFrom-RabbitMqDelivery -Delivery $Delivery
+                ConvertFrom-RabbitMqDelivery -Delivery $Delivery -IncludeEnvelope:([bool]$IncludeEnvelope)
                 #Kill the loop since we got a message
                 $SecondsRemaining = 0
                 $MessageReceived = $true
@@ -164,7 +172,7 @@
         if($Timeout -and -not $MessageReceived)
         {
             #Write an error if -Timeout was specified and there is nothing in $Message after the loop
-            Write-Error -Message "Timeout waiting for event" -ErrorAction Stop
+            Write-Error -Message 'No message received while waiting for event in allowed time.' -ErrorAction Stop
         }
     }
     finally
