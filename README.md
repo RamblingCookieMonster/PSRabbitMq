@@ -221,7 +221,6 @@ I don't know what messaging is and I'm terrible with code. Apologies for ugly, i
 
 TODO:
 
- * Add basic Pester tests and AppVeyor scaffolding
  * Break down functions a bit more. For example, offer functions to handle acknowledgements. I might retrieve a message requireing acknowledgement, and only send the ack down the line if my code meets certain criteria.
 
 References:
@@ -229,4 +228,4 @@ References:
 * [RabbitMQ .NET Client references](http://www.rabbitmq.com/releases/rabbitmq-dotnet-client/v3.5.3/rabbitmq-dotnet-client-3.5.3-client-htmldoc/html/)
 * [RabbitMQ .NET / C# API Guide](http://www.rabbitmq.com/dotnet-api-guide.html)
 * [RabbitMQ Management API](https://raw.githack.com/rabbitmq/rabbitmq-management/rabbitmq_v3_5_3/priv/www/api/index.html)
-* [Accompanying blog post on RabbitMQ and PowerShell](http://ramblingcookiemonster.github.io/RabbitMQ-Intro/
+* [Accompanying blog post on RabbitMQ and PowerShell](http://ramblingcookiemonster.github.io/RabbitMQ-Intro/)
