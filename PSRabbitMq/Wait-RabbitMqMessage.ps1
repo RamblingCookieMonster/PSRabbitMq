@@ -78,6 +78,12 @@
 
         # Connect to rabbitmq.contoso.com over SSL, with credentials stored in $Credential
 	    # Wait for the "message.key" message on the "MyExchange" exchange, "MyQueue" queue.
+
+    .EXAMPLE
+	    Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Queue MyQueue -Key "message.key" -Ssl Tls12 -CertPath C:\Certifcates\user.pfx -CertPassphrase (ConvertTo-SecureString -String 'MyPassword' -AsPlainText -Force)
+
+        # Connect to rabbitmq.contoso.com over SSL, with credentials stored in $Credential
+	    # Wait for the "message.key" message on the "MyExchange" exchange, "MyQueue" queue.
     #>
     [Cmdletbinding(DefaultParameterSetName = 'NoQueueName')]
 	param(
@@ -90,8 +96,7 @@
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
 		[string]$Key,
 
-        [parameter(ParameterSetName = 'QueueName',
-                   Mandatory = $True)]
+        [parameter(ParameterSetName = 'QueueName', Mandatory = $True)]
         [string]$QueueName,
 
         [parameter(ParameterSetName = 'QueueName')]

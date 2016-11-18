@@ -5,7 +5,7 @@
 
         [Parameter (ParameterSetName = 'SslOption')]
         [Parameter (ParameterSetName = 'Certificate')]
-        [System.Security.Authentication.SslProtocols]$Version = 'Tls11',
+        [System.Security.Authentication.SslProtocols]$Version = 'Tls12',
         [string]$ServerName,
         
         [Parameter (ParameterSetName = 'Certificate', Mandatory)]
