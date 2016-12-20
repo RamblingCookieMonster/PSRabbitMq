@@ -64,8 +64,11 @@
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER vhost
+        Create a connection via the specified virtual host, default is /
+
     .PARAMETER IncludeEnvelope
-        Include the Message envelope (Metadata) of the message. If ommited, only 
+        Include the Message envelope (Metadata) of the message. If ommited, only
         the payload (body of the message) is returned
 
     .EXAMPLE
@@ -119,6 +122,8 @@
 
         [System.Security.Authentication.SslProtocols]$Ssl,
 
+        [string]$vhost = '/',
+
         [switch]$IncludeEnvelope
     )
 
@@ -135,6 +140,7 @@
             'CertPath'       { $ConnParams.Add('CertPath',$CertPath)}
             'CertPassphrase' { $ConnParams.Add('CertPassphrase',$CertPassphrase)}
             'Credential'     { $ConnParams.Add('Credential',$Credential) }
+            'vhost'          { $ConnParams.Add('vhost',$vhost) }
             'Key'            { $ChanParams.Add('Key',$Key)}
             'QueueName'
             {
@@ -150,7 +156,7 @@
         $Connection = New-RabbitMqConnectionFactory @ConnParams
         Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Connection Established' -PercentComplete 75
 
-        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection    
+        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
 
         Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Connected' -Completed
 
