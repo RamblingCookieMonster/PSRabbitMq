@@ -108,8 +108,8 @@
     param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
-        [parameter(Mandatory = $True)]
-        [string]$Exchange,
+        [parameter(Mandatory = $false)]
+        [string]$Exchange = '',
 
         [parameter(Mandatory = $True)]
         [string]$Key,
