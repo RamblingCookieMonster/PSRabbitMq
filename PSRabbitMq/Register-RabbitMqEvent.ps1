@@ -58,8 +58,11 @@
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER vhost
+        Create a connection via the specified virtual host, default is /
+
     .PARAMETER IncludeEnvelope
-        Include the Message envelope (Metadata) of the message. If ommited, only 
+        Include the Message envelope (Metadata) of the message. If ommited, only
         the payload (body of the message) is returned
 
     .EXAMPLE
@@ -117,6 +120,8 @@
 
         [System.Security.Authentication.SslProtocols]$Ssl,
 
+        [string]$vhost = '/',
+
         [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
         [uint32]$prefetchSize,
@@ -131,7 +136,7 @@
 
         [switch]$IncludeEnvelope
     )
-    
+
     if ($PSBoundParameters['Credential'])
     {
 
@@ -145,7 +150,7 @@
         $ArgList = $ComputerName, $Exchange, $Key, $Action, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
 
     }
-    
+
     Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
         param(
             $ComputerName,
@@ -177,11 +182,13 @@
 
             #Build the connection and channel params
             $ConnParams = @{ ComputerName = $ComputerName }
+            $ConnParams.Add('vhost',$vhost)
+
             $ChanParams = @{ Exchange = $Exchange }
             If($Ssl)       { $ConnParams.Add('Ssl',$Ssl) }
-            if ($CertPath) { 
+            if ($CertPath) {
                 $ConnParams.Add('CertPath',$CertPath)
-                $ConnParams.Add('CertPassphrase',$CertPassphrase)            
+                $ConnParams.Add('CertPassphrase',$CertPassphrase)
             }
             If($Credential -and ! $CertPath){ $ConnParams.Add('Credential',$Credential) }
             If($Key)       { $ChanParams.Add('Key',$Key)}
@@ -197,7 +204,6 @@
                 $ChanParams.Add('prefetchCount',$prefetchCount)
                 $ChanParams.Add('global',$global)
             }
-            
 
             #Create the connection and channel
             $Connection = New-RabbitMqConnectionFactory @ConnParams
