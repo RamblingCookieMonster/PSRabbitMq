@@ -65,6 +65,9 @@
     .PARAMETER vhost
         Create a connection via the specified virtual host, default is /
 
+    .PARAMETER ActionData
+        Allows you to specify an Object to be available in the Action scriptblock triggered upon reception of message.
+        
     .PARAMETER IncludeEnvelope
         Include the Message envelope (Metadata) of the message. If ommited, only
         the payload (body of the message) is returned
@@ -142,24 +145,20 @@
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
         [switch]$global,
 
-        [switch]$IncludeEnvelope
+        [switch]$IncludeEnvelope,
+
+        [string]$ListenerJobName, 
+
+        $ActionData
     )
 
-    if ($PSBoundParameters['Credential'])
-    {
-
-        $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
-
+    if ( !$PSBoundParameters.ContainsKey('ListenerJobName') ) {
+        $ListenerJobName = "RabbitMq_${ComputerName}_${Exchange}_${Key}"
     }
 
-    elseif ($PSBoundParameters['CertPath'])
-    {
+    $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope,$ActionData
 
-        $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
-
-    }
-
-    Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
+    Start-Job -Name $ListenerJobName -ArgumentList $Arglist -ScriptBlock {
         param(
             $ComputerName,
             $Exchange,
@@ -181,7 +180,8 @@
             $prefetchSize,
             $prefetchCount,
             $global,
-            $IncludeEnvelope
+            $IncludeEnvelope,
+            $ActionData
         )
 
         $ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
