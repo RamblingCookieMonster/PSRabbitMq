@@ -12,6 +12,10 @@
     .PARAMETER Exchange
         Optional PSCredential to connect to RabbitMq with
 
+    .PARAMETER ExchangeType
+        Specify the Exchange Type to be Explicitly declared as non-durable, non-autodelete, without any option.
+        Should you want more specific Exchange, create it prior connecting to the channel, and do not specify this parameter.
+
     .PARAMETER Key
         Routing Keys to look for
 
@@ -92,8 +96,9 @@
 
         #Actively declare the Exchange (as non-autodelete, non-durable)
         if($ExchangeType -and [string]::Empty -ne $Exchange) {
-            $ExchangeResult = $Channel.ExchangeDeclare($Exchange,$ExchangeType)
+            $ExchangeResult = $Channel.ExchangeDeclare($Exchange,$ExchangeType.ToLower())
         }
+
         #Create a personal queue or bind to an existing queue
         if($QueueName)
         {

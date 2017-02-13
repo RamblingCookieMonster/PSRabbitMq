@@ -14,6 +14,10 @@
     .PARAMETER Exchange
         RabbitMq Exchange
 
+    .PARAMETER ExchangeType
+        Specify the Exchange Type to be Explicitly declared as non-durable, non-autodelete, without any option.
+        Should you want more specific Exchange, create it prior connecting to the channel, and do not specify this parameter.
+
     .PARAMETER Key
         Routing Keys to look for
 
@@ -81,6 +85,10 @@
         [parameter(Mandatory = $True)]
         [AllowEmptyString()]
         [string]$Exchange,
+        
+        [parameter(Mandatory = $false)]
+        [ValidateSet('Direct','Fanout','Topic','Headers')]
+		[string]$ExchangeType = $null,
 
         [parameter(ParameterSetName = 'NoQueueName', Mandatory = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
@@ -140,14 +148,14 @@
     if ($PSBoundParameters['Credential'])
     {
 
-        $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
+        $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
 
     }
 
     elseif ($PSBoundParameters['CertPath'])
     {
 
-        $ArgList = $ComputerName, $Exchange, $Key, $Action, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
+        $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
 
     }
 
@@ -155,6 +163,7 @@
         param(
             $ComputerName,
             $Exchange,
+            $ExchangeType,
             $Key,
             $Action,
             [PSCredential]
@@ -203,6 +212,10 @@
                 $ChanParams.Add('prefetchSize',$prefetchSize)
                 $ChanParams.Add('prefetchCount',$prefetchCount)
                 $ChanParams.Add('global',$global)
+            }
+
+            if( $ExchangeType ) {
+                $ChanParams.Add('ExchangeType',$ExchangeType)
             }
 
             #Create the connection and channel

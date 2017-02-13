@@ -14,6 +14,10 @@
     .PARAMETER Exchange
         RabbitMq Exchange
 
+    .PARAMETER ExchangeType
+        Specify the Exchange Type to be Explicitly declared as non-durable, non-autodelete, without any option.
+        Should you want more specific Exchange, create it prior connecting to the channel, and do not specify this parameter.
+        
     .PARAMETER Key
         Routing Key to look for
 
