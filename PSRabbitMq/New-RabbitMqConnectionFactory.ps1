@@ -49,6 +49,8 @@
 
         [System.Security.Authentication.SslProtocols]$Ssl,
 
+        [int]$Port = 5672,
+
         [string]$CertPath,
 
         [securestring]$CertPassphrase,
@@ -69,12 +71,25 @@
         $HostNameProp.SetValue($Factory, $ComputerName)
 
         $TcpPortProp = [RabbitMQ.Client.ConnectionFactory].GetField("Port")
-        $TcpPortProp.SetValue($Factory, 5671)
+        if ( $PSBoundParameters.ContainsKey('Ssl') -and 
+             $Ssl -ne [Security.Authentication.SslProtocols]::None -and
+             !$PSBoundParameters.ContainsKey('Port')
+            )
+        {
+            $TcpPortProp.SetValue($Factory, 5671)
+        }
+        else {
+            $TcpPortProp.SetValue($Factory, $Port)
+        }
 
         $SslOptionsParams = @{}
         Switch($PSBoundParameters.Keys)
         {
-            'Ssl'            { $SslOptionsParams.Add('Version',$Ssl) }
+            'Ssl'            {
+                if ( $Ssl -ne [Security.Authentication.SslProtocols]::None ) {
+                    $SslOptionsParams.Add('Version',$Ssl) 
+                }
+            }
             'CertPath'       { $SslOptionsParams.Add('CertPath',$CertPath)}
             'CertPassphrase' { $SslOptionsParams.Add('CertPassphrase',$CertPassphrase)}
         }
