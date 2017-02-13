@@ -44,13 +44,22 @@
     .PARAMETER Credential
         Optional PSCredential to connect to RabbitMq with
 
+    .PARAMETER CertPath
+        Pkcs12/PFX formatted certificate to connect to RabbitMq with.  Prior to connecting, please make sure the system trusts the CA issuer or self-signed SCMB certifiate.
+
+    .PARAMETER CertPassphrase
+        The SecureString Pkcs12/PFX Passphrase of the certificate.
+
     .PARAMETER Ssl
         Optional Ssl version to connect to RabbitMq with
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER vhost
+        Create a connection via the specified virtual host, default is /
+
     .PARAMETER IncludeEnvelope
-        Include the Message envelope (Metadata) of the message. If ommited, only 
+        Include the Message envelope (Metadata) of the message. If ommited, only
         the payload (body of the message) is returned
 
     .EXAMPLE
@@ -90,7 +99,13 @@
         [System.Management.Automation.Credential()]
         $Credential,
 
+        [string]$CertPath,
+
+        [securestring]$CertPassphrase,
+
         [System.Security.Authentication.SslProtocols]$Ssl,
+
+        [string]$vhost = '/',
 
         [switch]$IncludeEnvelope
     )
@@ -101,9 +116,12 @@
         $ChanParams = @{ Exchange = $Exchange }
         Switch($PSBoundParameters.Keys)
         {
-            'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
-            'Credential' { $ConnParams.Add('Credential',$Credential) }
-            'Key'        { $ChanParams.Add('Key',$Key)}
+            'Ssl'            { $ConnParams.Add('Ssl',$Ssl) }
+            'CertPath'       { $ConnParams.Add('CertPath',$CertPath)}
+            'CertPassphrase' { $ConnParams.Add('CertPassphrase',$CertPassphrase)}
+            'Credential'     { $ConnParams.Add('Credential',$Credential) }
+            'vhost'          { $ConnParams.Add('vhost',$vhost) }
+            'Key'            { $ChanParams.Add('Key',$Key)}
             'QueueName'
             {
                 $ChanParams.Add('QueueName',$QueueName)
@@ -113,10 +131,14 @@
             }
         }
 
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Building connection' -PercentComplete 0
+
         #Create the connection and channel
         $Connection = New-RabbitMqConnectionFactory @ConnParams
-        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Connection Established' -PercentComplete 75
 
+        $Channel = Connect-RabbitMqChannel @ChanParams -Connection $Connection
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Connected' -Completed
 
         #Create our consumer
         $Consumer = New-Object RabbitMQ.Client.QueueingBasicConsumer($Channel)

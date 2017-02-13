@@ -47,13 +47,22 @@
     .PARAMETER Credential
         Optional PSCredential to connect to RabbitMq with
 
+    .PARAMETER CertPath
+        Pkcs12/PFX formatted certificate to connect to RabbitMq with.  Prior to connecting, please make sure the system trusts the CA issuer or self-signed SCMB certifiate.
+
+    .PARAMETER CertPassphrase
+        The SecureString Pkcs12/PFX Passphrase of the certificate.
+
     .PARAMETER Ssl
         Optional Ssl version to connect to RabbitMq with
 
         If specified, we use ComputerName as the SslOption ServerName property.
 
+    .PARAMETER vhost
+        Create a connection via the specified virtual host, default is /
+
     .PARAMETER IncludeEnvelope
-        Include the Message envelope (Metadata) of the message. If ommited, only 
+        Include the Message envelope (Metadata) of the message. If ommited, only
         the payload (body of the message) is returned
 
     .EXAMPLE
@@ -105,7 +114,13 @@
         [System.Management.Automation.Credential()]
         $Credential,
 
+        [string]$CertPath,
+
+        [securestring]$CertPassphrase,
+
         [System.Security.Authentication.SslProtocols]$Ssl,
+
+        [string]$vhost = '/',
 
         [parameter(parameterSetName = 'QueueNameWithBasicQoS', Mandatory = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
@@ -121,8 +136,21 @@
 
         [switch]$IncludeEnvelope
     )
-    
-    $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
+
+    if ($PSBoundParameters['Credential'])
+    {
+
+        $ArgList = $ComputerName, $Exchange, $Key, $Action, $Credential, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
+
+    }
+
+    elseif ($PSBoundParameters['CertPath'])
+    {
+
+        $ArgList = $ComputerName, $Exchange, $Key, $Action, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope
+
+    }
+
     Start-Job -Name "RabbitMq_${ComputerName}_${Exchange}_${Key}" -ArgumentList $Arglist -ScriptBlock {
         param(
             $ComputerName,
@@ -132,6 +160,8 @@
             [PSCredential]
             [System.Management.Automation.Credential()]
             $Credential,
+            [string]$CertPath,
+            [securestring]$CertPassphrase,
             $Ssl,
             $LoopInterval,
             $QueueName,
@@ -152,9 +182,15 @@
 
             #Build the connection and channel params
             $ConnParams = @{ ComputerName = $ComputerName }
+            $ConnParams.Add('vhost',$vhost)
+
             $ChanParams = @{ Exchange = $Exchange }
             If($Ssl)       { $ConnParams.Add('Ssl',$Ssl) }
-            If($Credential){ $ConnParams.Add('Credential',$Credential) }
+            if ($CertPath) {
+                $ConnParams.Add('CertPath',$CertPath)
+                $ConnParams.Add('CertPassphrase',$CertPassphrase)
+            }
+            If($Credential -and ! $CertPath){ $ConnParams.Add('Credential',$Credential) }
             If($Key)       { $ChanParams.Add('Key',$Key)}
             If($QueueName)
             {
@@ -168,7 +204,6 @@
                 $ChanParams.Add('prefetchCount',$prefetchCount)
                 $ChanParams.Add('global',$global)
             }
-            
 
             #Create the connection and channel
             $Connection = New-RabbitMqConnectionFactory @ConnParams

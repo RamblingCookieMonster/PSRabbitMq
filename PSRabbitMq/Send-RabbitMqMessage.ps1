@@ -33,6 +33,12 @@
     .PARAMETER Credential
         Optional PSCredential to connect to RabbitMq with
 
+    .PARAMETER CertPath
+        Pkcs12/PFX formatted certificate to connect to RabbitMq with.  Prior to connecting, please make sure the system trusts the CA issuer or self-signed SCMB certifiate.
+
+    .PARAMETER CertPassphrase
+        The SecureString Pkcs12/PFX Passphrase of the certificate.
+
     .PARAMETER Ssl
         Optional Ssl version to connect to RabbitMq with
 
@@ -102,8 +108,8 @@
     param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
-        [parameter(Mandatory = $True)]
-        [string]$Exchange,
+        [parameter(Mandatory = $false)]
+        [string]$Exchange = '',
 
         [parameter(Mandatory = $True)]
         [string]$Key,
@@ -119,6 +125,10 @@
         [PSCredential]
         [System.Management.Automation.Credential()]
         $Credential,
+
+        [string]$CertPath,
+
+        [securestring]$CertPassphrase,
 
         [System.Security.Authentication.SslProtocols]$Ssl,
 
@@ -155,20 +165,26 @@
     )
     begin
     {
+
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Building connection' -PercentComplete 0
        
         #Build the connection. Filter bound parameters, splat them.
         $ConnParams = @{ ComputerName = $ComputerName }
         Switch($PSBoundParameters.Keys)
         {
-            'Ssl'        { $ConnParams.Add('Ssl',$Ssl) }
-            'Credential' { $ConnParams.Add('Credential',$Credential) }
-            'vhost'      { $ConnParams.Add('vhost',$vhost) }
+            'Ssl'            { $ConnParams.Add('Ssl',$Ssl) }
+            'CertPath'       { $ConnParams.Add('CertPath',$CertPath)}
+            'CertPassphrase' { $ConnParams.Add('CertPassphrase',$CertPassphrase)}
+            'Credential'     { $ConnParams.Add('Credential',$Credential) }
+            'vhost'          { $ConnParams.Add('vhost',$vhost) }
         }
         Write-Verbose "Connection parameters: $($ConnParams | Out-String)"
 
         #Create the connection and channel
         $Connection = New-RabbitMqConnectionFactory @ConnParams
-
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Connection Established' -PercentComplete 75
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Connected' -Completed
+        
         $Channel = $Connection.CreateModel()
         $BodyProps = $Channel.CreateBasicProperties()
         if($Persistent)
