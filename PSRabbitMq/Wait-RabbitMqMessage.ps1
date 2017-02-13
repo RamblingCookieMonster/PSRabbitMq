@@ -89,6 +89,10 @@
         [parameter(Mandatory = $True)]
 		[string]$Exchange,
 
+        [parameter(Mandatory = $false)]
+        [ValidateSet('Direct','Fanout','Topic','Headers')]
+		[string]$ExchangeType,
+
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
 		[string]$Key,
@@ -142,6 +146,7 @@
             'Credential'     { $ConnParams.Add('Credential',$Credential) }
             'vhost'          { $ConnParams.Add('vhost',$vhost) }
             'Key'            { $ChanParams.Add('Key',$Key)}
+            'ExchangeType'   { $ChanParams.Add('ExchangeType',$ExchangeType)}
             'QueueName'
             {
                 $ChanParams.Add('QueueName',$QueueName)
