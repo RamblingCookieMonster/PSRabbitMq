@@ -76,31 +76,31 @@
         the payload (body of the message) is returned
 
     .EXAMPLE
-	    Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Key "message.key"
+        Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Key "message.key"
 
-	    # Wait for the "message.key" message on the "MyExchange" exchange.
+        # Wait for the "message.key" message on the "MyExchange" exchange.
 
     .EXAMPLE
-	    Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Queue MyQueue -Key "message.key" -Ssl Tls12 -Credential $Credential
+        Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Queue MyQueue -Key "message.key" -Ssl Tls12 -Credential $Credential
 
         # Connect to rabbitmq.contoso.com over SSL, with credentials stored in $Credential
-	    # Wait for the "message.key" message on the "MyExchange" exchange, "MyQueue" queue.
+        # Wait for the "message.key" message on the "MyExchange" exchange, "MyQueue" queue.
     #>
     [Cmdletbinding(DefaultParameterSetName = 'NoQueueName')]
-	param(
+    param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
         [parameter(Mandatory = $True)]
         [AllowEmptyString()]
-		[string]$Exchange,
+        [string]$Exchange,
 
         [parameter(Mandatory = $false)]
         [ValidateSet('Direct','Fanout','Topic','Headers')]
-		[string]$ExchangeType,
+        [string]$ExchangeType,
 
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
-		[string]$Key,
+        [string]$Key,
 
         [parameter(ParameterSetName = 'QueueName',
                    Mandatory = $True)]
