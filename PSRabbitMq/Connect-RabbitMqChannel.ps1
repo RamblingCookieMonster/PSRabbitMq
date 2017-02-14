@@ -95,7 +95,7 @@
         Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Attempting connection to channel' -PercentComplete 80
 
         #Actively declare the Exchange (as non-autodelete, non-durable)
-        if($ExchangeType -and [string]::Empty -ne $Exchange) {
+        if($ExchangeType -and ![string]::IsNullOrEmpty($Exchange)) {
             $ExchangeResult = $Channel.ExchangeDeclare($Exchange,$ExchangeType.ToLower())
         }
 
