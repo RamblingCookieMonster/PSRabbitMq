@@ -12,6 +12,10 @@
     .PARAMETER Exchange
         Optional PSCredential to connect to RabbitMq with
 
+    .PARAMETER ExchangeType
+        Specify the Exchange Type to be Explicitly declared as non-durable, non-autodelete, without any option.
+        Should you want more specific Exchange, create it prior connecting to the channel, and do not specify this parameter.
+
     .PARAMETER Key
         Routing Keys to look for
 
@@ -43,6 +47,10 @@
         [parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
         [AllowEmptyString()]
         [string]$Exchange,
+
+        [parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('Direct','Fanout','Topic','Headers')]
+        [string]$ExchangeType = $null,
 
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -84,7 +92,12 @@
     {
         $Channel = $Connection.CreateModel()
 
-         Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Attempting connection to channel' -PercentComplete 80
+        Write-Progress -id 10 -Activity 'Create SCMB Connection' -Status 'Attempting connection to channel' -PercentComplete 80
+
+        #Actively declare the Exchange (as non-autodelete, non-durable)
+        if($ExchangeType -and ![string]::IsNullOrEmpty($Exchange)) {
+            $ExchangeResult = $Channel.ExchangeDeclare($Exchange,$ExchangeType.ToLower())
+        }
 
         #Create a personal queue or bind to an existing queue
         if($QueueName)

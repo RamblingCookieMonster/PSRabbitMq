@@ -14,6 +14,10 @@
     .PARAMETER Exchange
         RabbitMq Exchange
 
+    .PARAMETER ExchangeType
+        Specify the Exchange Type to be Explicitly declared as non-durable, non-autodelete, without any option.
+        Should you want more specific Exchange, create it prior connecting to the channel, and do not specify this parameter.
+        
     .PARAMETER Key
         Routing Key to look for
 
@@ -72,26 +76,31 @@
         the payload (body of the message) is returned
 
     .EXAMPLE
-	    Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Key "message.key"
+        Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Key "message.key"
 
-	    # Wait for the "message.key" message on the "MyExchange" exchange.
+        # Wait for the "message.key" message on the "MyExchange" exchange.
 
     .EXAMPLE
-	    Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Queue MyQueue -Key "message.key" -Ssl Tls12 -Credential $Credential
+        Wait-RabbitMqMessage -ComputerName rabbitmq.contoso.com -Exchange MyExchange -Queue MyQueue -Key "message.key" -Ssl Tls12 -Credential $Credential
 
         # Connect to rabbitmq.contoso.com over SSL, with credentials stored in $Credential
-	    # Wait for the "message.key" message on the "MyExchange" exchange, "MyQueue" queue.
+        # Wait for the "message.key" message on the "MyExchange" exchange, "MyQueue" queue.
     #>
     [Cmdletbinding(DefaultParameterSetName = 'NoQueueName')]
-	param(
+    param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
 
         [parameter(Mandatory = $True)]
-		[string]$Exchange,
+        [AllowEmptyString()]
+        [string]$Exchange,
+
+        [parameter(Mandatory = $false)]
+        [ValidateSet('Direct','Fanout','Topic','Headers')]
+        [string]$ExchangeType,
 
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
-		[string]$Key,
+        [string]$Key,
 
         [parameter(ParameterSetName = 'QueueName',
                    Mandatory = $True)]
@@ -142,6 +151,7 @@
             'Credential'     { $ConnParams.Add('Credential',$Credential) }
             'vhost'          { $ConnParams.Add('vhost',$vhost) }
             'Key'            { $ChanParams.Add('Key',$Key)}
+            'ExchangeType'   { $ChanParams.Add('ExchangeType',$ExchangeType)}
             'QueueName'
             {
                 $ChanParams.Add('QueueName',$QueueName)

@@ -14,6 +14,10 @@
     .PARAMETER Exchange
         RabbitMq Exchange
 
+    .PARAMETER ExchangeType
+        Specify the Exchange Type to be Explicitly declared as non-durable, non-autodelete, without any option.
+        Should you want more specific Exchange, create it prior connecting to the channel, and do not specify this parameter.
+        
     .PARAMETER Key
         Routing Key to look for
 
@@ -73,6 +77,10 @@
 
         [parameter(Mandatory = $True)]
         [string]$Exchange,
+        
+        [parameter(Mandatory = $false)]
+        [ValidateSet('Direct','Fanout','Topic','Headers')]
+        [string]$ExchangeType = $null,
 
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
@@ -122,6 +130,7 @@
             'Credential'     { $ConnParams.Add('Credential',$Credential) }
             'vhost'          { $ConnParams.Add('vhost',$vhost) }
             'Key'            { $ChanParams.Add('Key',$Key)}
+            'ExchangeType'   { $ChanParams.Add('ExchangeType',$ExchangeType)}
             'QueueName'
             {
                 $ChanParams.Add('QueueName',$QueueName)
