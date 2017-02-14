@@ -91,7 +91,7 @@
         
         [parameter(Mandatory = $false)]
         [ValidateSet('Direct','Fanout','Topic','Headers')]
-		[string]$ExchangeType = $null,
+        [string]$ExchangeType = $null,
 
         [parameter(ParameterSetName = 'NoQueueName', Mandatory = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS', Mandatory = $true)]
