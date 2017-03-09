@@ -98,10 +98,12 @@
         [ValidateSet('Direct','Fanout','Topic','Headers')]
         [string]$ExchangeType,
 
+        [Alias('routing_key')]
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
         [string]$Key,
 
+        [Alias('Queue')]
         [parameter(ParameterSetName = 'QueueName',
                    Mandatory = $True)]
         [string]$QueueName,
@@ -120,6 +122,8 @@
         [int]$Timeout = 10,
 
         [int]$LoopInterval = 1,
+
+        [double]$LoopIntervalMilliseconds = 0,
 
         [PSCredential]
         [System.Management.Automation.Credential()]
@@ -179,13 +183,14 @@
         if($Timeout)
         {
             $TimeSpan = New-TimeSpan -Seconds $Timeout
-            $SecondsRemaining = $Timeout
+            $SecondsRemaining = [timespan]::FromSeconds($Timeout)
         }
         else
         {
-            $SecondsRemaining = [Double]::PositiveInfinity
+            $SecondsRemaining = [timespan]::MaxValue
         }
-        $RMQTimeout = New-TimeSpan -Seconds $LoopInterval
+        
+        $RMQTimeout = (New-TimeSpan -Seconds $LoopInterval) + ([timeSpan]::FromMilliseconds($LoopIntervalMilliseconds))
 
         while($SecondsRemaining -gt 0)
         {
@@ -202,7 +207,7 @@
                     $Channel.BasicAck($Delivery.DeliveryTag, $false)
                 }
             }
-            $SecondsRemaining--
+            $SecondsRemaining-=$RMQTimeout
         }
         if($Timeout -and -not $MessageReceived)
         {
