@@ -82,10 +82,12 @@
         [ValidateSet('Direct','Fanout','Topic','Headers')]
         [string]$ExchangeType = $null,
 
+        [Alias('routing_key')]
         [parameter(ParameterSetName = 'NoQueueName',Mandatory = $true)]
         [parameter(ParameterSetName = 'QueueName',Mandatory = $false)]
         [string]$Key,
 
+        [Alias('Queue')]
         [parameter(ParameterSetName = 'QueueName',
                    Mandatory = $True)]
         [string]$QueueName,
@@ -102,6 +104,8 @@
         [switch]$RequireAck,
 
         [int]$LoopInterval = 1,
+
+        [double]$LoopIntervalMilliseconds = 0,
 
         [PSCredential]
         [System.Management.Automation.Credential()]
@@ -156,7 +160,8 @@
         $Delivery = New-Object RabbitMQ.Client.Events.BasicDeliverEventArgs
 
         #Listen on an infinite loop but still use timeouts so Ctrl+C will work!
-        $Timeout = New-TimeSpan -Seconds $LoopInterval
+        $Timeout = (New-TimeSpan -Seconds $LoopInterval) + ([timeSpan]::FromMilliseconds($LoopIntervalMilliseconds))
+
         while($true)
         {
             if($Consumer.Queue.Dequeue($Timeout.TotalMilliseconds, [ref]$Delivery))

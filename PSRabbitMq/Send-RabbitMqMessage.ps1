@@ -218,7 +218,7 @@
             'priority'       { $BodyProps.Priority = $priority }
             'DeliveryMode'   { $BodyProps.DeliveryMode = $DeliveryMode }
             'headers'        { 
-                $HeadersFormatted = New-Object 'System.Collections.Generic.Dictionary[String,String]'
+                $HeadersFormatted = New-Object 'System.Collections.Generic.Dictionary[String,Object]'
                 foreach ($key in $headers.Keys)
                 {
                     $HeadersFormatted.Add([string]$key,$headers[$key])
