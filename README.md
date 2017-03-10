@@ -29,10 +29,14 @@ Listen for RabbitMQ messages until you break execution:
 Skip this section if you're just interested in using PSRabbitMQ to send and receive messages.
 
 ```PowerShell
-# Download RabbitMQTools
-# https://github.com/RamblingCookieMonster/RabbitMQTools/archive/master.zip
-# Unblock the archive
-# Copy the RabbitMQTools module to one of your module paths ($env:PSModulePath -split ";")
+# Install the module
+    Install-Module RabbitMQTools
+
+# No PowerShellGet module?
+    # Download RabbitMQTools
+    # https://github.com/RamblingCookieMonster/RabbitMQTools/archive/master.zip
+    # Unblock the archive
+    # Copy the RabbitMQTools module to one of your module paths ($env:PSModulePath -split ";")
 
 #Import the module
     Import-Module RabbitMQTools -force
@@ -137,10 +141,14 @@ Skip this section if you're just interested in using PSRabbitMQ to send and rece
 This is a module for sending and receiving messages using a RabbitMQ server and the .NET client library. Originally written by CD, slight modification by @ramblingcookiemonster.
 
 ```powershell
-# Download PSRabbitMQ
-# https://github.com/RamblingCookieMonster/PSRabbitMQ/archive/master.zip
-# Unblock the archiveiles
-# Copy the PSRabbitMQ module folder to one of your module paths ($env:PSModulePath -split ";")
+# Install the module
+    Install-Module PSRabbitMQ
+
+# No PowerShellGet module?
+    # Download PSRabbitMQ
+    # https://github.com/RamblingCookieMonster/PSRabbitMQ/archive/master.zip
+    # Unblock the archiveiles
+    # Copy the PSRabbitMQ module folder to one of your module paths ($env:PSModulePath -split ";")
 
 #Import the module
     Import-Module PSRabbitMQ
