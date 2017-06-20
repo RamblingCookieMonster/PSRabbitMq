@@ -1,4 +1,10 @@
-﻿#Get public and private function definition files.
+﻿#handle PS2
+if(-not $PSScriptRoot)
+{
+    $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
+}
+
+#Get public and private function definition files.
     $Public  = Get-ChildItem $PSScriptRoot\*.ps1 -ErrorAction SilentlyContinue 
     $Private = Get-ChildItem $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue 
 
@@ -16,24 +22,19 @@
     }
     
 #Create / Read config
-    #handle PS2
-    if(-not $PSScriptRoot)
-    {
-        $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
-    }
 
-    if(-not (Test-Path -Path "$PSScriptRoot\PSRabbitMq.xml" -ErrorAction SilentlyContinue))
+    if(-not (Test-Path -Path "$env:APPDATA\PSRabbitMq.xml" -ErrorAction SilentlyContinue))
     {
         Try
         {
-            Write-Warning "Did not find config file $PSScriptRoot\PSRabbitMq.xml, attempting to create"
+            Write-Warning "Did not find config file $env:APPDATA\PSRabbitMq.xml, attempting to create"
             [pscustomobject]@{
                 ComputerName = $null
-            } | Export-Clixml -Path "$PSScriptRoot\PSRabbitMq.xml" -Force -ErrorAction Stop
+            } | Export-Clixml -Path "$env:APPDATA\PSRabbitMq.xml" -Force -ErrorAction Stop
         }
         Catch
         {
-            Write-Warning "Failed to create config file $PSScriptRoot\PSRabbitMq.xml: $_"
+            Write-Warning "Failed to create config file $env:APPDATA\PSRabbitMq.xml: $_"
         }
     }
     
@@ -42,7 +43,7 @@
     {
         #Import the config
         $RabbitMqConfig = $null
-        $RabbitMqConfig = Get-RabbitMqConfig -Source PSRabbitMq.xml -ErrorAction Stop | Select -Property ComputerName
+        $RabbitMqConfig = Get-RabbitMqConfig -Source PSRabbitMq.xml -ErrorAction Stop | Select-Object -Property ComputerName
     }
     Catch
     {   
@@ -50,4 +51,4 @@
     }
 
 # Modules
-Export-ModuleMember -Function $($Public | Select -ExpandProperty BaseName) -Alias *
+Export-ModuleMember -Function $($Public | Select-Object -ExpandProperty BaseName) -Alias *

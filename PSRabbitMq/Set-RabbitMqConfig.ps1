@@ -11,10 +11,8 @@
     .PARAMETER ComputerName
         Specify a ComputerName to use
 
-    .PARAMETER Persist
-        Exports the current RabbitMQConfig to $PSScriptRoot\PSRabbitMq.xml
-        
-        (Default: $PSScriptRoot = ModulePath)
+    .PARAMETER NoPersist
+        Disables the export of the current RabbitMQConfig to $env:APPDATA\PSRabbitMq.xml                
 
     .Example
         Set-RabbitMqConfig -ComputerName "rabbitmq.contoso.com"
@@ -28,14 +26,8 @@
     [cmdletbinding()]
     param(
         [string]$ComputerName,
-        [switch]$Persist
+        [switch]$NoPersist
     )
-
-    #handle PS2
-    if(-not $PSScriptRoot)
-    {
-        $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
-    }
 
     If($PSBoundParameters.ContainsKey('ComputerName'))
     {
@@ -43,17 +35,10 @@
     }
 
     #If Persist was specified and the Variable is not Empty
-    if($Persist -and (-not([String]::IsNullOrEmpty($Script:RabbitMqConfig.ComputerName))))
+    if(-not($NoPersist) -and (-not([String]::IsNullOrEmpty($Script:RabbitMqConfig.ComputerName))))
     {
-        try
-        {
-            Write-Verbose "Writing current RabbitMQConfig to: $PSScriptRoot\PSRabbitMq.xml"
-            $Script:RabbitMqConfig | Export-Clixml -Path "$PSScriptRoot\PSRabbitMq.xml" -Force
-        }
-        catch
-        {
-            Write-Warning "Your configuration was saved for the current session, but you need to run Powershell with Administrator permissions to persist this Configuration to $PSScriptRoot\PSRabbitMq.xml!"
-        }
+        Write-Verbose "Writing current RabbitMQConfig to: $env:APPDATA\PSRabbitMq.xml"
+        $Script:RabbitMqConfig | Export-Clixml -Path "$env:APPDATA\PSRabbitMq.xml" -Force
     }
 
 }
