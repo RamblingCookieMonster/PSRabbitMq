@@ -12,7 +12,7 @@ Describe "Set-RabbitMqConfig" {
                 ComputerName = $null
             }
             $computerName = "rabbitmq.contoso.com"
-            Set-RabbitMqConfig -ComputerName $computerName
+            Set-RabbitMqConfig -ComputerName $computerName -NoPersist
             $Script:RabbitMqConfig.ComputerName | Should be $computerName
         }        
     }
@@ -21,13 +21,8 @@ Describe "Set-RabbitMqConfig" {
 
         It "persists the current Configuration"{
             Mock Export-CliXml {}
-            Set-RabbitMqConfig -Persist
+            Set-RabbitMqConfig
             Assert-MockCalled -CommandName Export-CliXml -Times 1
-        }
-
-        It "handles an UnauthorizedAccessException"{
-            Mock Export-Clixml {throw [System.UnauthorizedAccessException]}
-            {Set-RabbitMqConfig -Persist -WarningAction SilentlyContinue} | Should Not Throw            
         }
     }
 }
