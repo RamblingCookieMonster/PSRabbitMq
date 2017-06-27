@@ -18,7 +18,7 @@
         Set-RabbitMqConfig -ComputerName "rabbitmq.contoso.com"
 
     .Example
-        Set-RabbitMqConfig -ComputerName "rabbitmq.contoso.com" -Persist
+        Set-RabbitMqConfig -ComputerName "rabbitmq.contoso.com" -NoPersist
 
     .FUNCTIONALITY
         RabbitMq
@@ -26,6 +26,8 @@
     [cmdletbinding()]
     param(
         [string]$ComputerName,
+        [ValidateSet("CurrentUser","System")]
+        [string]$Scope = "CurrentUser",
         [switch]$NoPersist
     )
 
@@ -37,8 +39,15 @@
     #If Persist was specified and the Variable is not Empty
     if(-not($NoPersist) -and (-not([String]::IsNullOrEmpty($Script:RabbitMqConfig.ComputerName))))
     {
-        Write-Verbose "Writing current RabbitMQConfig to: $env:APPDATA\PSRabbitMq.xml"
-        $Script:RabbitMqConfig | Export-Clixml -Path "$env:APPDATA\PSRabbitMq.xml" -Force
+        if($Scope -eq "CurrentUser"){
+            Write-Verbose "Writing current RabbitMQConfig to: $env:APPDATA\PSRabbitMq.xml"
+            $Script:RabbitMqConfig | Export-Clixml -Path "$env:APPDATA\PSRabbitMq.xml" -Force
+        }
+        elseif($Scope -eq "System"){
+            Write-Verbose "Writing current RabbitMQConfig to: $env:PROGRAMDATA\PSRabbitMq.xml"
+            $Script:RabbitMqConfig | Export-Clixml -Path "$env:PROGRAMDATA\PSRabbitMq.xml" -Force
+        }
+        
     }
 
 }

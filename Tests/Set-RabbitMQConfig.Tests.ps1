@@ -19,9 +19,15 @@ Describe "Set-RabbitMqConfig" {
 
     context "Persisting the RabbitMQ Configuration"{
 
-        It "persists the current Configuration"{
+        It "persists the current Configuration to AppData"{
             Mock Export-CliXml {}
-            Set-RabbitMqConfig
+            Set-RabbitMqConfig -Scope CurrentUser
+            Assert-MockCalled -CommandName Export-CliXml -Times 1
+        }
+
+        It "persists the current Configuration to ProgramData"{
+            Mock Export-CliXml {}
+            Set-RabbitMqConfig -Scope System
             Assert-MockCalled -CommandName Export-CliXml -Times 1
         }
     }
