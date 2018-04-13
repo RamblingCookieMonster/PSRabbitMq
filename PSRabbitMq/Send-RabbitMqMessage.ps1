@@ -219,9 +219,9 @@
             'DeliveryMode'   { $BodyProps.DeliveryMode = $DeliveryMode }
             'headers'        { 
                 $HeadersFormatted = New-Object 'System.Collections.Generic.Dictionary[String,Object]'
-                foreach ($key in $headers.Keys)
+                foreach ($headerKey in $headers.Keys)
                 {
-                    $HeadersFormatted.Add([string]$key,$headers[$key])
+                    $HeadersFormatted.Add([string]$headerKey,$headers[$headerKey])
                 }
                 $BodyProps.Headers = $HeadersFormatted 
             }
