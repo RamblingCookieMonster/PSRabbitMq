@@ -3,7 +3,7 @@
 ModuleToProcess = 'PSRabbitMQ.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.0'
+ModuleVersion = '0.3.2'
 
 # ID used to uniquely identify this module
 GUID = '41d4d893-5070-44f2-9cf7-9d80020603b1'
