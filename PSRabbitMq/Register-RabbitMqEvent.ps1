@@ -117,7 +117,7 @@
 
         [parameter(ParameterSetName = 'QueueName')]
         [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
-        [Hashtable]$Arguments = $null,
+        [System.Collections.Generic.Dictionary[String, Object]]$Arguments = $null,
 
         [switch]$RequireAck,
 

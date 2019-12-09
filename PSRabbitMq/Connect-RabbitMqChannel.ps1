@@ -78,7 +78,7 @@
 
         [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
-        [Hashtable]$Arguments = $null,
+        [System.Collections.Generic.Dictionary[String, Object]]$Arguments = $null,
 
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]

@@ -102,7 +102,7 @@
         [bool]$AutoDelete = $False,
 
         [parameter(ParameterSetName = 'QueueName')]
-        [Hashtable]$Arguments = $null,
+        [System.Collections.Generic.Dictionary[String, Object]]$Arguments = $null,
 
         [switch]$RequireAck,
 
