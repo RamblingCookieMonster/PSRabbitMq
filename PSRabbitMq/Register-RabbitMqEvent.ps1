@@ -115,6 +115,10 @@
         [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
         [bool]$AutoDelete = $False,
 
+        [parameter(ParameterSetName = 'QueueName')]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS')]
+        [Hashtable]$Arguments = $null,
+
         [switch]$RequireAck,
 
         [int]$LoopInterval = 1,
@@ -156,7 +160,7 @@
         $ListenerJobName = "RabbitMq_${ComputerName}_${Exchange}_${Key}"
     }
 
-    $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope,$ActionData
+    $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $Arguments, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope,$ActionData
 
     Start-Job -Name $ListenerJobName -ArgumentList $Arglist -ScriptBlock {
         param(
@@ -176,6 +180,7 @@
             $Durable,
             $Exclusive,
             $AutoDelete,
+            $Arguments,
             $RequireAck,
             $prefetchSize,
             $prefetchCount,
@@ -207,6 +212,7 @@
                 $ChanParams.Add('Durable' ,$Durable)
                 $ChanParams.Add('Exclusive',$Exclusive)
                 $ChanParams.Add('AutoDelete' ,$AutoDelete)
+                $ChanParams.Add('Arguments' ,$Arguments)
             }
             if($prefetchSize) {
                 $ChanParams.Add('prefetchSize',$prefetchSize)

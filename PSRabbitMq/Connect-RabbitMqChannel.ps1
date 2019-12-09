@@ -75,7 +75,11 @@
         [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
         [bool]$AutoDelete = $False,
-        
+
+        [parameter(ParameterSetName = 'QueueName',ValueFromPipelineByPropertyName = $true)]
+        [parameter(parameterSetName = 'QueueNameWithBasicQoS',ValueFromPipelineByPropertyName = $true)]
+        [Hashtable]$Arguments = $null,
+
         [parameter(parameterSetName = 'QueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [parameter(ParameterSetName = 'NoQueueNameWithBasicQoS',Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
         [uint32]$prefetchSize,
@@ -102,7 +106,7 @@
         #Create a personal queue or bind to an existing queue
         if($QueueName)
         {
-            $QueueResult = $Channel.QueueDeclare($QueueName, $Durable, $Exclusive, $AutoDelete, $null)
+            $QueueResult = $Channel.QueueDeclare($QueueName, $Durable, $Exclusive, $AutoDelete, $Arguments)
             if(-not $Key)
             {
                 $Key = $QueueName
