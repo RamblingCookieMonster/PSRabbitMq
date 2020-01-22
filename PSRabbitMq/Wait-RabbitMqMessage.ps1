@@ -117,6 +117,9 @@
         [parameter(ParameterSetName = 'QueueName')]
         [bool]$AutoDelete = $False,
 
+        [parameter(ParameterSetName = 'QueueName')]
+        [System.Collections.Generic.Dictionary[String, Object]]$Arguments = $null,
+
         [switch]$RequireAck,
 
         [int]$Timeout = 10,
@@ -162,6 +165,7 @@
                 $ChanParams.Add('Durable' ,$Durable)
                 $ChanParams.Add('Exclusive',$Exclusive)
                 $ChanParams.Add('AutoDelete' ,$AutoDelete)
+                $ChanParams.Add('Arguments' ,$Arguments)
             }
         }
         Write-Verbose "Connection parameters: $($ConnParams | Out-String)`nChannel parameters: $($ChanParams | Out-String)"
@@ -189,7 +193,7 @@
         {
             $SecondsRemaining = [timespan]::MaxValue
         }
-        
+
         $RMQTimeout = (New-TimeSpan -Seconds $LoopInterval) + ([timeSpan]::FromMilliseconds($LoopIntervalMilliseconds))
 
         while($SecondsRemaining -gt 0)

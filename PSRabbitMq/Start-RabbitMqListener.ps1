@@ -101,6 +101,9 @@
         [parameter(ParameterSetName = 'QueueName')]
         [bool]$AutoDelete = $False,
 
+        [parameter(ParameterSetName = 'QueueName')]
+        [System.Collections.Generic.Dictionary[String, Object]]$Arguments = $null,
+
         [switch]$RequireAck,
 
         [int]$LoopInterval = 1,
@@ -137,10 +140,11 @@
             'ExchangeType'   { $ChanParams.Add('ExchangeType',$ExchangeType)}
             'QueueName'
             {
-                $ChanParams.Add('QueueName',$QueueName)
-                $ChanParams.Add('Durable' ,$Durable)
-                $ChanParams.Add('Exclusive',$Exclusive)
-                $ChanParams.Add('AutoDelete' ,$AutoDelete)
+                $ChanParams.Add('QueueName', $QueueName)
+                $ChanParams.Add('Durable', $Durable)
+                $ChanParams.Add('Exclusive', $Exclusive)
+                $ChanParams.Add('AutoDelete', $AutoDelete)
+                $ChanParams.Add('Arguments', $Arguments)
             }
         }
 
