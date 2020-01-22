@@ -160,7 +160,7 @@
         $ListenerJobName = "RabbitMq_${ComputerName}_${Exchange}_${Key}"
     }
 
-    $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $Arguments, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope,$ActionData
+    $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $Arguments, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope,$ActionData,$vhost
 
     Start-Job -Name $ListenerJobName -ArgumentList $Arglist -ScriptBlock {
         param(
@@ -186,7 +186,8 @@
             $prefetchCount,
             $global,
             $IncludeEnvelope,
-            $ActionData
+            $ActionData,
+            $vhost
         )
 
         $ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
