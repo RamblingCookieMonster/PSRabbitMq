@@ -89,7 +89,7 @@
     [Cmdletbinding(DefaultParameterSetName = 'NoQueueName')]
     param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
-        [int]$Port = 5672,
+        [int]$Port,
 
         [parameter(Mandatory = $True)]
         [AllowEmptyString()]
@@ -149,10 +149,11 @@
     try
     {
         #Build the connection and channel params
-        $ConnParams = @{ ComputerName = $ComputerName; Port = $Port }
+        $ConnParams = @{ ComputerName = $ComputerName }
         $ChanParams = @{ Exchange = $Exchange }
         Switch($PSBoundParameters.Keys)
         {
+            'Port'           { $ConnParams.Add('Port',$Port)}
             'Ssl'            { $ConnParams.Add('Ssl',$Ssl) }
             'CertPath'       { $ConnParams.Add('CertPath',$CertPath)}
             'CertPassphrase' { $ConnParams.Add('CertPassphrase',$CertPassphrase)}
