@@ -91,6 +91,9 @@
         
     .PARAMETER Headers
         message header field table
+    
+    .PARAMETER Port
+        Port number used by the RabbitMq (AMQP) Server
 
     .EXAMPLE
         Send-RabbitMqMessage -ComputerName RabbitMq.Contoso.com -Exchange MyExchange -Key "wat" -InputObject $Object
@@ -161,7 +164,9 @@
 
         [Int64]$TTL,
 
-        [hashtable]$headers
+        [hashtable]$headers,
+        
+        [int16] $Port
     )
     begin
     {
@@ -177,6 +182,7 @@
             'CertPassphrase' { $ConnParams.Add('CertPassphrase',$CertPassphrase)}
             'Credential'     { $ConnParams.Add('Credential',$Credential) }
             'vhost'          { $ConnParams.Add('vhost',$vhost) }
+            'Port'           { $ConnParams.Add('Port',$Port) }
         }
         Write-Verbose "Connection parameters: $($ConnParams | Out-String)"
 
