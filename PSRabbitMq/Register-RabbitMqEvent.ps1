@@ -158,7 +158,7 @@
 
         $ActionData,
         
-        [int16]$Port
+        [int16]$Port = 5672
     )
 
     if ( !$PSBoundParameters.ContainsKey('ListenerJobName') ) {
