@@ -72,6 +72,9 @@
         Include the Message envelope (Metadata) of the message. If ommited, only
         the payload (body of the message) is returned
 
+    .PARAMETER Port
+        Port number used by the RabbitMq (AMQP) Server
+
     .EXAMPLE
         Register-RabbitMqEvent -ComputerName RabbitMq.Contoso.com -Exchange TestFanExc -Key 'wat' -Credential $Credential -Ssl Tls12 -QueueName TestQueue -Action {"HI! $_"}
 
@@ -153,15 +156,17 @@
 
         [string]$ListenerJobName, 
 
-        $ActionData
+        $ActionData,
+        
+        [int16]$Port = 5672
     )
 
     if ( !$PSBoundParameters.ContainsKey('ListenerJobName') ) {
         $ListenerJobName = "RabbitMq_${ComputerName}_${Exchange}_${Key}"
     }
 
-    $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $Arguments, $RequireAck,$prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope,$ActionData,$vhost
-
+    $ArgList = $ComputerName, $Exchange, $ExchangeType, $Key, $Action, $Credential, $CertPath, $CertPassphrase, $Ssl, $LoopInterval, $QueueName, $Durable, $Exclusive, $AutoDelete, $Arguments, $RequireAck, $prefetchSize,$prefetchCount,$global,[bool]$IncludeEnvelope,$ActionData,$vhost,$Port
+    
     Start-Job -Name $ListenerJobName -ArgumentList $Arglist -ScriptBlock {
         param(
             $ComputerName,
@@ -187,7 +192,8 @@
             $global,
             $IncludeEnvelope,
             $ActionData,
-            $vhost
+            $vhost,
+            $Port
         )
 
         $ActionSB = [System.Management.Automation.ScriptBlock]::Create($Action)
@@ -196,7 +202,10 @@
             Import-Module PSRabbitMq
 
             #Build the connection and channel params
-            $ConnParams = @{ ComputerName = $ComputerName }
+            $ConnParams = @{ 
+                ComputerName = $ComputerName 
+                Port = $Port
+            }
             $ConnParams.Add('vhost',$vhost)
 
             $ChanParams = @{ Exchange = $Exchange }

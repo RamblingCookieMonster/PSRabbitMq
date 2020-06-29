@@ -11,6 +11,9 @@
 
         If SSL is specified, we use this as the SslOption server name as well.
 
+    .PARAMETER Port
+        Port number used by the RabbitMq (AMQP) Server
+
     .PARAMETER Exchange
         RabbitMq Exchange
 
@@ -89,7 +92,7 @@
     [Cmdletbinding(DefaultParameterSetName = 'NoQueueName')]
     param(
         [string]$ComputerName = $Script:RabbitMqConfig.ComputerName,
-        [int]$Port,
+        [int16]$Port = 5672,
 
         [parameter(Mandatory = $True)]
         [AllowEmptyString()]
