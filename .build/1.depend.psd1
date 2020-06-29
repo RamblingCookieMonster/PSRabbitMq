@@ -11,6 +11,6 @@
 
     psdeploy = 'latest'
     buildhelpers = 'latest'
-    pester = 'latest' 
+    pester = '4.10.1' 
     psake = 'latest'
 }
