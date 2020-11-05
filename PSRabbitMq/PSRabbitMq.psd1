@@ -1,9 +1,9 @@
 ﻿@{
 # Script module or binary module file associated with this manifest
-ModuleToProcess = 'PSRabbitMQ.psm1'
+ModuleToProcess = 'PSRabbitMq.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.4'
+ModuleVersion = '0.3.5'
 
 # ID used to uniquely identify this module
 GUID = '41d4d893-5070-44f2-9cf7-9d80020603b1'
